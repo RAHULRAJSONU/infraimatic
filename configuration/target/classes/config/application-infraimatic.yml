@@ -1,0 +1,108 @@
+# Default application configuration for Infraimatic.
+server:
+  error:
+    include-binding-errors: always
+    include-stacktrace: on_param
+
+spring:
+  application:
+    name: infraimatic
+  # The datasource is configured via environment variables or command line
+  datasource:
+    url: jdbc:postgresql://localhost:5432/infraimatic
+    username: postgres
+    password: p0$stgres2025
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+#        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+        jdbc.time_zone: UTC
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+#    baseline-on-migrate: true
+  # Thymeleaf config
+  thymeleaf:
+    prefix: classpath:/templates/email/
+    suffix: .html
+    mode: HTML
+    encoding: UTF-8
+    cache: false
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, info, prometheus
+  endpoint:
+    health:
+      show-details: when_authorized
+
+infraimatic:
+  security:
+    enabled: false
+    # In development you can override this secret via environment variable
+    jwt:
+      secret: dev-secret-key
+
+# OpenApi Swagger configuration
+springdoc:
+  swagger-ui:
+    display-request-duration: true
+    operationsSorter: method
+    tags-sorter: method
+    deep-linking: true
+    defaultModelsExpandDepth: 1
+    defaultModelExpandDepth: 1
+    display-operation-id: false
+    filter: false
+    show-extensions: false
+    use-root-path: true
+    show-common-extensions: true
+    try-it-out-enabled: true
+  cache:
+    disabled: false
+  show-actuator: false
+  writer-with-default-pretty-printer: true
+
+# Identity config
+identity:
+  ui-host: http://localhost:3000
+  security:
+    privateKeyPath: "C:/Users/RAJRA/.ssh/private_key.pem"
+    publicKeyPath: "C:/Users/RAJRA/.ssh/public_key.pem"
+    keyBeginMarker: -----BEGIN PRIVATE KEY-----
+    keyEndMarker: -----END PRIVATE KEY-----
+    password:
+      validationRegex: "^(?=.*[0-9])(?=.*[?!@#$%^&*\\\\/])(?=.*[A-Z])(?=.*[a-z])[a-zA-Z0-9?!@#$%^&*\\\\/].{8,30}$"
+      validationMessage: Invalid password, password should contain at least one lowercase, one uppercase, one digit and one special character. Length should be 8-30 characters.
+      isPasswordUsageAllowed: false # Can not use old passwords
+      oldPasswordSpan: 7 # can not use last 7 passwords
+    resetPassword:
+      tokenValidityInSecond: 600
+      redirectUrl: /identity/reset-password
+    secureRandomChar: "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
+    jwt:
+      expiration: 86400000
+      refresh-token:
+        expiration: 604800000
+      secret-key: eyJhbGciOiJIUzUxMiJ9eyJzdWIiOiJzaHViaGFtLmd1cHRhQGdtYWlsLmNvbSIsImlhdCI6MTY4NzI4NjE3OCwiZXhwIjoxNjg3Mjg5Nzc4fQw4Uc4lHiEPzGXlIWCpyCaLNPoYlarPtNAIrN1OAZqaAxAFLHyDMnETa8BVRQ9cztp4X6lFwlELHsp4j5MyXOcg
+#Logging Conf
+logging:
+  level:
+    org.springframework.boot: error
+    org.springframework.security: debug
+    org.springframework.security.web: debug
+    org.springframework.web: debug
+    org.apache.catalina: error
+    org.springdoc: debug
+    com.mainul35:
+      - info
+      - trace
+      - debug
+      - error
+      - warn

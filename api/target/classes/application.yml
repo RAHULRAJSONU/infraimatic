@@ -1,0 +1,9 @@
+spring:
+  config:
+    import: >
+      classpath:config/application-infraimatic.yml,
+      optional:classpath:config/application-${spring.profiles.active}.yml
+logging:
+  level:
+    org.flywaydb.core: INFO
+    org.springframework.boot.autoconfigure.flyway: DEBUG
