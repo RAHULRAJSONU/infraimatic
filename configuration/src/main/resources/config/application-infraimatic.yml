@@ -61,7 +61,7 @@ spring:
         multiplier: 2
         max-interval: 30s
     openai:
-      api-key:
+      api-key: ${GROQ_API_KEY}
       base-url: https://api.groq.com/openai
       chat:
         options:
