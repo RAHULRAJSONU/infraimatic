@@ -1,0 +1,33 @@
+{
+  "type": "temporary-exit",
+  "preferredType": "temporary-exit",
+  "items": [
+    {
+      "sequenceNo": 1,
+      "itemType": "equipment",
+      "description": "company MacBook Pro",
+      "quantity": 1,
+      "uom": null,
+      "remarks": null,
+      "serialNumbers": ["MBP-2021-3344"]
+    }
+  ],
+  "notes": "Temporary exit for client visit",
+  "siteId": null,
+  "vehicle": null,
+  "gpNumber": null,
+  "inputText": "I am stepping out temporarily for a client visit. Carrying my company MacBook Pro, serial MBP-2021-3344. Expected to return by 3 PM. – Rohit Sharma",
+  "requestor": {
+    "name": "Rohit Sharma",
+    "email": null,
+    "phone": null,
+    "personId": null,
+    "personType": "employee"
+  },
+  "expectedStart": null,
+  "expectedEnd": null,
+  "_confidence": {
+    "type": 0.94,
+    "requestor.name": 0.95
+  }
+}

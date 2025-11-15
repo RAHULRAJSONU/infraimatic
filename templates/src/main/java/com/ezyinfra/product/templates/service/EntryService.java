@@ -4,8 +4,11 @@ import com.ezyinfra.product.common.dto.EntryDto;
 import com.ezyinfra.product.common.exception.NotFoundException;
 import com.ezyinfra.product.common.exception.ValidationException;
 import com.fasterxml.jackson.databind.JsonNode;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
+import java.util.UUID;
 
 /**
  * Service responsible for ingesting submissions, validating them against
@@ -43,11 +46,17 @@ public interface EntryService {
      * @return the submission DTO
      * @throws NotFoundException if the submission is not found
      */
-    EntryDto getEntry(String tenantId, String type, Integer version, Long id);
+    EntryDto getEntry(String tenantId, String type, Integer version, UUID id);
+
+    EntryDto getEntry(String tenantId, String type, UUID id);
 
     /**
      * List submissions for the given tenant, template type and version. For simplicity
      * this method returns all matching submissions without pagination.
      */
     List<EntryDto> listEntries(String tenantId, String type, Integer version);
+
+    Page<EntryDto> listEntriesPageable(String tenantId, String type, Integer version, Pageable pageable);
+
+    Page<EntryDto> listEntriesPageable(String tenantId, String type, Pageable pageable);
 }

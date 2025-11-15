@@ -19,6 +19,8 @@ public interface EnrichmentService {
      */
     NluParseResponse parse(String tenantId, String text);
 
+    NluParseResponse parse(String tenantId, String type, String text);
+
     /**
      * Parse free text and persist the resulting normalized submission. Returns
      * the id of the stored submission and the normalized payload. This method

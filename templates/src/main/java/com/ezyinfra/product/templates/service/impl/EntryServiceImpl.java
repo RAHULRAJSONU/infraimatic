@@ -16,6 +16,8 @@ import com.networknt.schema.JsonSchemaFactory;
 import com.networknt.schema.SpecVersion;
 import com.networknt.schema.ValidationMessage;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -76,7 +78,7 @@ public class EntryServiceImpl implements EntryService {
     }
 
     @Override
-    public EntryDto getEntry(String tenantId, String type, Integer version, Long id) {
+    public EntryDto getEntry(String tenantId, String type, Integer version, UUID id) {
         RecordEntity record = recordRepository.findByIdAndTenantId(id, tenantId)
                 .orElseThrow(() -> new NotFoundException("Submission not found: id=" + id + ", tenant=" + tenantId));
         if (!Objects.equals(type, record.getType()) ||
@@ -87,12 +89,34 @@ public class EntryServiceImpl implements EntryService {
     }
 
     @Override
+    public EntryDto getEntry(String tenantId, String type, UUID id) {
+        RecordEntity record = recordRepository.findByIdAndTenantId(id, tenantId)
+                .orElseThrow(() -> new NotFoundException("Entry not found: id=" + id + ", tenant=" + tenantId));
+        return toDto(record);
+    }
+
+    @Override
     public List<EntryDto> listEntries(String tenantId, String type, Integer version) {
         return recordRepository.findByTenantIdAndTypeAndTemplateVersion(tenantId, type, version)
                 .stream()
                 .map(this::toDto)
                 .collect(Collectors.toList());
     }
+
+    @Override
+    public Page<EntryDto> listEntriesPageable(String tenantId, String type, Integer version, Pageable pageable) {
+        Page<EntryDto> page = recordRepository.findByTenantIdAndTypeAndTemplateVersion(tenantId, type, version, pageable)
+                .map(this::toDto);
+        return page;
+    }
+
+    @Override
+    public Page<EntryDto> listEntriesPageable(String tenantId, String type, Pageable pageable) {
+        Page<EntryDto> page = recordRepository.findByTenantIdAndType(tenantId, type, pageable)
+                .map(this::toDto);
+        return page;
+    }
+
 
     private EntryDto toDto(RecordEntity record) {
         return new EntryDto(

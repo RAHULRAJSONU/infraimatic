@@ -1,0 +1,44 @@
+{
+  "type": "exit",
+  "preferredType": "exit",
+  "items": [
+    {
+      "sequenceNo": 1,
+      "itemType": "material",
+      "description": "PVC pipes (2m)",
+      "quantity": 3,
+      "uom": null,
+      "remarks": "leftover",
+      "serialNumbers": []
+    },
+    {
+      "sequenceNo": 2,
+      "itemType": "tool",
+      "description": "toolbox",
+      "quantity": 1,
+      "uom": null,
+      "remarks": "leftover",
+      "serialNumbers": []
+    }
+  ],
+  "notes": "Contractor exit with leftover materials",
+  "siteId": null,
+  "vehicle": {
+    "driverName": null,
+    "registrationNo": "RJ14AB5532"
+  },
+  "gpNumber": null,
+  "inputText": "Contractor Rajesh exiting with leftover materials: 3 PVC pipes (2m), 1 toolbox. Vehicle RJ14AB5532. Work completed at 6 PM.",
+  "requestor": {
+    "name": "Rajesh",
+    "email": null,
+    "phone": null,
+    "personId": null,
+    "personType": "contractor"
+  },
+  "expectedStart": null,
+  "expectedEnd": null,
+  "_confidence": {
+    "items[0].quantity": 0.89
+  }
+}

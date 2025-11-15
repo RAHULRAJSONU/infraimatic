@@ -1,0 +1,35 @@
+{
+  "type": "entry",
+  "preferredType": "entry",
+  "items": [
+    {
+      "sequenceNo": 1,
+      "itemType": "material",
+      "description": "bags of cement (50kg each)",
+      "quantity": 10,
+      "uom": "bags",
+      "remarks": null,
+      "serialNumbers": []
+    }
+  ],
+  "notes": "Delivery for Store-2",
+  "siteId": null,
+  "vehicle": {
+    "driverName": "Imran",
+    "registrationNo": "UP14BT9988"
+  },
+  "gpNumber": null,
+  "inputText": "Delivery truck UP14BT9988 arriving with 10 bags of cement (50kg each) for Store-2. Driver name: Imran. ETA 2 PM.",
+  "requestor": {
+    "name": null,
+    "email": null,
+    "phone": null,
+    "personId": null,
+    "personType": null
+  },
+  "expectedStart": null,
+  "expectedEnd": null,
+  "_confidence": {
+    "vehicle.registrationNo": 0.95
+  }
+}

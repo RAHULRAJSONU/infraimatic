@@ -7,12 +7,13 @@ import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 /**
  * Repository for CRUD operations on template definitions. Includes helper
  * methods to fetch the latest version of a template for a tenant.
  */
-public interface TemplateDefinitionRepository extends JpaRepository<TemplateDefinitionEntity, Long> {
+public interface TemplateDefinitionRepository extends JpaRepository<TemplateDefinitionEntity, UUID> {
 
     Optional<TemplateDefinitionEntity> findByTenantIdAndTypeAndVersion(String tenantId, String type, Integer version);
 

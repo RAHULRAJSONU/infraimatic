@@ -1,0 +1,40 @@
+1. Visitor entry with laptop
+
+"Megha Rastogi coming tomorrow around 11 AM for a client presentation. She will carry an HP laptop, serial LAP-HP-2025-7788, and one small backpack. Please arrange entry at main gate."
+
+2. Equipment exit for repair
+
+"Sending hydraulic pump model HP450 for repair to vendor. Serial SN-HP450-8891. Pickup scheduled today 4 PM, vehicle MH12AB1234 driven by Rakesh."
+
+3. Contractor entering site with tools
+
+"Team from L&T contractor group entering site at 9:30 AM with 2 drilling tools and 1 welding kit. Contact person is Suresh Kumar (phone 9876543210)."
+
+4. Employee temporary exit with company laptop
+
+"I am stepping out temporarily for a client visit. Carrying my company MacBook Pro, serial MBP-2021-3344. Expected to return by 3 PM. – Rohit Sharma"
+
+5. Material inward movement by truck
+
+"Delivery truck UP14BT9988 arriving with 10 bags of cement (50kg each) for Store-2. Driver name: Imran. ETA 2 PM."
+
+6. Visitor entry with ID details
+
+"Guest visitor Priya Nair is coming at 10:45 for an interview. She will carry a handbag and personal laptop (serial PN-LT-1199). Her email is priya.nair@example.com
+."
+
+7. Tool exit for calibration
+
+"Sending out two torque wrenches for calibration, serials TW-9911 and TW-9912. Pickup around 5 PM by vehicle KA03MN1122."
+
+8. Employee entering with personal vehicle
+
+"Entering site at 8:30 AM. This is Arun Kumar, employee ID EMP-112, driving vehicle TN09CQ7721. No items carried."
+
+9. Contractor exit with leftover materials
+
+"Contractor Rajesh exiting with leftover materials: 3 PVC pipes (2m), 1 toolbox. Vehicle RJ14AB5532. Work completed at 6 PM."
+
+10. Internal movement of asset between buildings
+
+"Shifting generator unit GEN-55 from Block A to Block C at 2 PM. Asset will be moved internally using trolley. Team lead: Manoj."

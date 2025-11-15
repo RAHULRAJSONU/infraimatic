@@ -22,7 +22,7 @@
         <dependency>
             <groupId>com.ezyinfra.product</groupId>
             <artifactId>domain</artifactId>
-            <version>0.1.0-SNAPSHOT</version>
+            <version>${project.version}</version>
             <scope>compile</scope>
         </dependency>
         <!-- Spring Data JPA for ORM support -->

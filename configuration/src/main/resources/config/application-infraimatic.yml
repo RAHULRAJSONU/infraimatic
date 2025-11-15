@@ -7,12 +7,22 @@ server:
 spring:
   application:
     name: infraimatic
+  main:
+    allow-bean-definition-overriding: true
   # The datasource is configured via environment variables or command line
   datasource:
     url: jdbc:postgresql://localhost:5432/infraimatic
     username: postgres
     password: postgres
     driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 30          # tune per CPU/traffic
+      minimum-idle: 5
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+      validation-timeout: 5000
+      leak-detection-threshold: 0
   jpa:
     hibernate:
       ddl-auto: update
@@ -22,7 +32,7 @@ spring:
         format_sql: true
         jdbc.time_zone: UTC
   flyway:
-    enabled: true
+    enabled: false
     locations: classpath:db/migration
 #    baseline-on-migrate: true
   # Thymeleaf config
@@ -32,6 +42,32 @@ spring:
     mode: HTML
     encoding: UTF-8
     cache: false
+
+  ai:
+    chat:
+      memory:
+        repository:
+          jdbc:
+            initialize-schema: never
+      client:
+        observations:
+          log-prompt: true
+          log-completion: true
+          include-error-logging: true
+    retry:
+      max-attempts: 6
+      backoff:
+        initial-interval: 1s
+        multiplier: 2
+        max-interval: 30s
+    openai:
+      api-key: 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
+      base-url: https://api.groq.com/openai
+      chat:
+        options:
+          model: llama-3.3-70b-versatile
+          # model: openai/gpt-oss-20b
+          temperature: 0.0
 
 management:
   endpoints:
@@ -73,8 +109,8 @@ springdoc:
 identity:
   ui-host: http://localhost:3000
   security:
-    privateKeyPath: "C:/Users/RAJRA/.ssh/private_key.pem"
-    publicKeyPath: "C:/Users/RAJRA/.ssh/public_key.pem"
+    privateKeyPath: "C:/Users/Developer/.ssh/private_key.pem"
+    publicKeyPath: "C:/Users/Developer/.ssh/public_key.pem"
     keyBeginMarker: -----BEGIN PRIVATE KEY-----
     keyEndMarker: -----END PRIVATE KEY-----
     password:

@@ -5,12 +5,10 @@ import com.ezyinfra.product.common.dto.TemplateDto;
 import com.ezyinfra.product.templates.service.TemplateService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import io.swagger.v3.oas.annotations.parameters.RequestBody;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -20,10 +18,10 @@ import java.util.List;
  * tenant scoped and template version is part of the URL to allow multiple
  * coexisting versions.
  */
+@Slf4j
 @RestController
 @RequestMapping("/api/v1")
 @RequiredArgsConstructor
-@Validated
 @Tag(name = "Templates", description = "Manage templates per tenant")
 public class TemplateController {
 
@@ -52,7 +50,7 @@ public class TemplateController {
     public ResponseEntity<TemplateDto> createTemplate(
             @PathVariable("tenantId") String tenantId,
             @PathVariable("type") String type,
-            @RequestBody @Valid TemplateCreateRequest request) {
+            @RequestBody TemplateCreateRequest request) {
         TemplateDto dto = templateService.createTemplate(tenantId, type, request.name(), request.jsonSchema());
         return ResponseEntity.status(HttpStatus.CREATED).body(dto);
     }

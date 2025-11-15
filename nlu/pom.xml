@@ -34,16 +34,5 @@
             <artifactId>checkpost</artifactId>
             <version>${project.version}</version>
         </dependency>
-        <!-- Spring Web for REST controllers -->
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-web</artifactId>
-        </dependency>
-        <!-- Validation -->
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-validation</artifactId>
-        </dependency>
-
     </dependencies>
 </project>

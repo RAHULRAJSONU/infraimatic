@@ -1,0 +1,35 @@
+{
+  "type": "exit",
+  "preferredType": "exit",
+  "items": [
+    {
+      "sequenceNo": 1,
+      "itemType": "tool",
+      "description": "torque wrenches",
+      "quantity": 2,
+      "uom": null,
+      "remarks": "for calibration",
+      "serialNumbers": ["TW-9911", "TW-9912"]
+    }
+  ],
+  "notes": "Calibration",
+  "siteId": null,
+  "vehicle": {
+    "driverName": null,
+    "registrationNo": "KA03MN1122"
+  },
+  "gpNumber": null,
+  "inputText": "Sending out two torque wrenches for calibration, serials TW-9911 and TW-9912. Pickup around 5 PM by vehicle KA03MN1122.",
+  "requestor": {
+    "name": null,
+    "email": null,
+    "phone": null,
+    "personId": null,
+    "personType": null
+  },
+  "expectedStart": null,
+  "expectedEnd": null,
+  "_confidence": {
+    "items[0].serialNumbers": 0.93
+  }
+}

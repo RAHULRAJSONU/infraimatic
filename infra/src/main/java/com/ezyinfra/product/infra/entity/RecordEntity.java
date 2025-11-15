@@ -3,6 +3,9 @@ package com.ezyinfra.product.infra.entity;
 import com.ezyinfra.product.domain.EntryStatus;
 import com.fasterxml.jackson.databind.JsonNode;
 import jakarta.persistence.*;
+import jakarta.persistence.ForeignKey;
+import jakarta.persistence.Index;
+import jakarta.persistence.Table;
 import lombok.*;
 import org.hibernate.annotations.*;
 import org.hibernate.type.SqlTypes;
@@ -37,7 +40,7 @@ public class RecordEntity  extends AbstractPersistable {
     @JoinColumn(name = "template_id", foreignKey = @ForeignKey(name = "fk_record_template"))
     private TemplateDefinitionEntity template;
 
-    @Column(name = "template_version", insertable = false, updatable = false)
+    @Column(name = "template_version", updatable = false)
     private Integer templateVersion;
 
     @Enumerated(EnumType.STRING)

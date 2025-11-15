@@ -1,0 +1,35 @@
+{
+  "type": "exit",
+  "preferredType": "exit",
+  "items": [
+    {
+      "sequenceNo": 1,
+      "itemType": "equipment",
+      "description": "hydraulic pump model HP450",
+      "quantity": 1,
+      "uom": null,
+      "remarks": "for repair",
+      "serialNumbers": ["SN-HP450-8891"]
+    }
+  ],
+  "notes": "Sending hydraulic pump for repair",
+  "siteId": null,
+  "vehicle": {
+    "driverName": "Rakesh",
+    "registrationNo": "MH12AB1234"
+  },
+  "gpNumber": null,
+  "inputText": "Sending hydraulic pump model HP450 for repair to vendor. Serial SN-HP450-8891. Pickup scheduled today 4 PM, vehicle MH12AB1234 driven by Rakesh.",
+  "requestor": {
+    "name": null,
+    "email": null,
+    "phone": null,
+    "personId": null,
+    "personType": null
+  },
+  "expectedStart": null,
+  "expectedEnd": null,
+  "_confidence": {
+    "type": 0.90
+  }
+}

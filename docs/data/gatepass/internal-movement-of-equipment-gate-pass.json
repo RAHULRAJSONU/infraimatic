@@ -1,0 +1,32 @@
+{
+  "type": "internal-transfer",
+  "preferredType": "internal-transfer",
+  "items": [
+    {
+      "sequenceNo": 1,
+      "itemType": "equipment",
+      "description": "generator unit GEN-55",
+      "quantity": 1,
+      "uom": null,
+      "remarks": "internal movement",
+      "serialNumbers": ["GEN-55"]
+    }
+  ],
+  "notes": "Internal movement from Block A to Block C",
+  "siteId": null,
+  "vehicle": null,
+  "gpNumber": null,
+  "inputText": "Shifting generator unit GEN-55 from Block A to Block C at 2 PM. Asset will be moved using trolley. Team lead: Manoj.",
+  "requestor": {
+    "name": "Manoj",
+    "email": null,
+    "phone": null,
+    "personId": null,
+    "personType": "employee"
+  },
+  "expectedStart": null,
+  "expectedEnd": null,
+  "_confidence": {
+    "type": 0.93
+  }
+}

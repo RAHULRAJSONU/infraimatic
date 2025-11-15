@@ -1,0 +1,25 @@
+{
+  "type": "entry",
+  "preferredType": "entry",
+  "items": [],
+  "notes": "Employee entering with vehicle",
+  "siteId": null,
+  "vehicle": {
+    "driverName": "Arun Kumar",
+    "registrationNo": "TN09CQ7721"
+  },
+  "gpNumber": null,
+  "inputText": "Entering site at 8:30 AM. This is Arun Kumar, employee ID EMP-112, driving vehicle TN09CQ7721. No items carried.",
+  "requestor": {
+    "name": "Arun Kumar",
+    "email": null,
+    "phone": null,
+    "personId": null,
+    "personType": "employee"
+  },
+  "expectedStart": null,
+  "expectedEnd": null,
+  "_confidence": {
+    "requestor.name": 0.92
+  }
+}
