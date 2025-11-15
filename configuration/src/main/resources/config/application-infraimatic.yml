@@ -61,7 +61,7 @@ spring:
         multiplier: 2
         max-interval: 30s
     openai:
-      api-key: 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
+      api-key:
       base-url: https://api.groq.com/openai
       chat:
         options:
