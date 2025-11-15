@@ -27,8 +27,8 @@ Maven modules for each concern:
              ▲            ▲
              │            │
 ┌────────────┴─────┐┌─────┴─────────┐
-│    Templates     ││    Submissions │
-│  (CRUD, version) ││(validation, DB)│
+│    Templates     ││    Entry      │
+│  (CRUD, version) ││(validation,DB)│
 └────────────┬─────┘└─────┬─────────┘
              ▲            ▲
              │            │
