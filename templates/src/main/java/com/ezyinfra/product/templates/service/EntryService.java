@@ -31,7 +31,7 @@ public interface EntryService {
      * @throws NotFoundException   if the specified template cannot be found
      * @throws ValidationException if the normalized payload fails schema validation
      */
-    EntryDto createEntry(String tenantId, String type, Integer version,
+    EntryDto createEntry(String tenantId, String type,
                          JsonNode normalized, JsonNode payload,
                          JsonNode processingMeta);
 

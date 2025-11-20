@@ -2,6 +2,8 @@ spring:
   config:
     import: >
       classpath:config/application-infraimatic.yml,
+      classpath:config/application-twillio-test.yml
+      classpath:config/application-google-test.yml
       optional:classpath:config/application-${spring.profiles.active}.yml
 logging:
   level:

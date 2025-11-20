@@ -55,7 +55,6 @@ public class EnrichmentServiceImpl implements EnrichmentService {
         EntryDto submission = entryService.createEntry(
                 tenantId,
                 parseResponse.templateType(),
-                parseResponse.templateVersion(),
                 parseResponse.normalized(),
                 null,
                 null);

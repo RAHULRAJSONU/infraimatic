@@ -6,7 +6,7 @@ import lombok.Getter;
 public enum EmailTemplate {
 
     IDENTITY_ACCOUNT_CREATED("identity-account-created", "User Account Created Successfully!"),
-    IDENTITY_PASSWORD_CHANGE_SUCCESS("identity-password-change-success", "NexusX Account password changed"),
+    IDENTITY_PASSWORD_CHANGE_SUCCESS("identity-password-change-success", "Ezyinfra Account password changed"),
     IDENTITY_PASSWORD_RESET_REQUEST("identity-password-reset-request", "Please reset your password."),
     IDENTITY_PASSWORD_RESET_SUCCESS("identity-password-reset-success", "Password Reset Successfully.");
 

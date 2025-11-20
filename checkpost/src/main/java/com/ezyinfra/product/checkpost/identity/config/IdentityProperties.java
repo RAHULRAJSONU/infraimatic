@@ -28,7 +28,7 @@ public class IdentityProperties {
     public static class Password {
         private String validationRegex;
         private String validationMessage;
-        private boolean isPasswordUsageAllowed;
+        private boolean isPasswordReUsageAllowed;
         private int oldPasswordSpan;
 
     }

@@ -1,4 +1,4 @@
-package com.ezyinfra.product.domain;
+package com.ezyinfra.product.common.enums;
 
 /**
  * Status of a submission. Used to track lifecycle of submissions from initial

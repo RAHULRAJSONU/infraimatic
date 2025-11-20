@@ -1,4 +1,4 @@
-package com.ezyinfra.product.domain;
+package com.ezyinfra.product.common.enums;
 
 /**
  * Types of actions that can be audited. The audit log records changes to

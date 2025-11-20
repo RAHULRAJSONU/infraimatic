@@ -1,22 +1,27 @@
 package com.ezyinfra.product.nlu.service;
 
+import com.ezyinfra.product.common.dto.EntryDto;
 import com.ezyinfra.product.infra.entity.TemplateDefinitionEntity;
 import com.ezyinfra.product.infra.repository.TemplateDefinitionRepository;
 import com.ezyinfra.product.nlu.dto.ParseByTypeRequest;
 import com.ezyinfra.product.nlu.dto.ParseByTypeResponse;
+import com.ezyinfra.product.templates.service.EntryService;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.networknt.schema.ValidationMessage;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 public class ParseByTypeService {
     private final TemplateDefinitionRepository templateRepo;
+    private final EntryService entryService;
     private final PromptBuilder promptBuilder;
     private final LLMClient llm;
     private final JsonSchemaValidatorService validator;
@@ -24,13 +29,14 @@ public class ParseByTypeService {
     private final int maxRetries;
     private final double confidenceThreshold;
 
-    public ParseByTypeService(TemplateDefinitionRepository templateRepo,
+    public ParseByTypeService(TemplateDefinitionRepository templateRepo, EntryService entryService,
                               PromptBuilder promptBuilder,
                               LLMClient llm,
                               JsonSchemaValidatorService validator,
                               @Value("${llm.max-retries:2}") int maxRetries,
                               @Value("${llm.confidence-threshold:0.9}") double confidenceThreshold) {
         this.templateRepo = templateRepo;
+        this.entryService = entryService;
         this.promptBuilder = promptBuilder;
         this.llm = llm;
         this.validator = validator;
@@ -83,7 +89,8 @@ public class ParseByTypeService {
         Set<ValidationMessage> finalValidation = validator.validate(template, parsed);
         List<String> finalErrors = finalValidation.stream().map(ValidationMessage::getMessage).collect(Collectors.toList());
         boolean needsReview = lowConfidence || !finalErrors.isEmpty();
-
+        EntryDto newEntry = this.entryService.createEntry(tenant, req.type, parsed, null, null);
+        log.info("Entry created: {}", newEntry);
         return new ParseByTypeResponse(parsed, conf, finalErrors, raw, List.of());
     }
 

@@ -1,39 +1,48 @@
-version: '3.9'
+version: '3.8'
+
 services:
-  db:
-    image: postgres:15-alpine
-    container_name: infraimatic-db
-    environment:
-      POSTGRES_DB: infraimatic
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
+  redis:
+    image: redis:7
+    command: ["redis-server", "--save", "60", "1"] # persistence enabled
     ports:
-      - "5432:5432"
+      - "6379:6379"
     volumes:
-      - db-data:/var/lib/postgresql/data
+      - redisdata:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   app:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: infraimatic-app
+    image: infraimatic-api:local
     depends_on:
-      - db
+      zookeeper:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      # Database configuration: expected to point to the external Postgres instance.
+      SPRING_DATASOURCE_URL: ${SPRING_DATASOURCE_URL:-jdbc:postgresql://<POSTGRES_HOST>:5432/infraimatic}
+      SPRING_DATASOURCE_USERNAME: ${SPRING_DATASOURCE_USERNAME:-infra}
+      SPRING_DATASOURCE_PASSWORD: ${SPRING_DATASOURCE_PASSWORD:-infra_password}
+      # Redis
+      SPRING_REDIS_HOST: redis
+      SPRING_REDIS_PORT: 6379
+
     ports:
       - "8080:8080"
-    environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/infraimatic
-      SPRING_DATASOURCE_USERNAME: postgres
-      SPRING_DATASOURCE_PASSWORD: postgres
-      INFRAIMATIC_SECURITY_JWT_SECRET: changeit
-      INFRAIMATIC_SECURITY_ENABLED: 'true'
-      SPRING_FLYWAY_ENABLED: 'true'
-      SPRING_JPA_HIBERNATE_DDL_AUTO: none
-    # Wait for database to be ready before starting the application
-    healthcheck:
-      test: [ "CMD", "curl", "-f", "http://localhost:8080/actuator/health" ]
-      interval: 30s
-      timeout: 10s
-      retries: 5
+    restart: on-failure
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "50m"
+        max-file: "3"
 
 volumes:
-  db-data:
+  redisdata:

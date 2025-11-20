@@ -156,7 +156,7 @@ public class PasswordServiceImpl implements PasswordService {
         // Reset the user's password, update the user's password, and invalidate the token
         User user = resetToken.getUser();
         validatePasswordStrength(password);
-        if(!identityProperties.getPassword().isPasswordUsageAllowed()) {
+        if(!identityProperties.getPassword().isPasswordReUsageAllowed()) {
             checkPasswordHistory(user, password);
             if (user.getPasswordHistory().size() >= identityProperties.getPassword().getOldPasswordSpan()) {
                 user.getPasswordHistory().removeFirst();

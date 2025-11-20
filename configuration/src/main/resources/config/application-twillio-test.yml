@@ -1,0 +1,6 @@
+twilio:
+  auth-token: ${TWILIO_AUTH_TOKEN}
+  account-sid: ${TWILIO_ACCOUNT_SID}
+  whatsapp-from: ${TWILIO_WHATSAPP_FROM}
+  webhook:
+    enable-signature-validation: true

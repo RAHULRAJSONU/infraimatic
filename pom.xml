@@ -168,7 +168,7 @@
          not necessarily imply build order but aids readability. -->
     <modules>
         <module>common</module>
-        <module>domain</module>
+        <module>storage</module>
         <module>infra</module>
         <module>templates</module>
         <module>checkpost</module>
@@ -176,6 +176,7 @@
         <module>api</module>
         <module>configuration</module>
         <module>notification</module>
+        <module>messaging</module>
     </modules>
 
     <build>

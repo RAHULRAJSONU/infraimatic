@@ -34,7 +34,7 @@ public class UserEmailNotificationHelper {
     public void notifyUser(User user, EmailTemplate template, Map<String, Object> context) {
         try {
             final Email email = DefaultEmail.builder()
-                    .from(new InternetAddress(mailProperties.getUsername(), "NexusX Identity Service"))
+                    .from(new InternetAddress(mailProperties.getUsername(), "Ezyinfra Identity Service"))
                     .to(List.of(
                             new InternetAddress(user.getEmail(), user.getName())))
                     .subject(template.getSubject())
@@ -47,11 +47,11 @@ public class UserEmailNotificationHelper {
     }
 
     private InlinePicture createInlinePicture() throws URISyntaxException, IOException {
-        Resource resource = resourceLoader.getResource("classpath:images/nexusx-logo.png");
+        Resource resource = resourceLoader.getResource("classpath:images/ezyinfra-Ezyinfra.png");
         InputStream inputStream = resource.getInputStream();
         return DefaultInlinePicture.builder()
                 .imageBytes(inputStream.readAllBytes())
                 .imageType(ImageType.PNG)
-                .templateName("nexusx-logo").build();
+                .templateName("ezyinfra-Ezyinfra").build();
     }
 }

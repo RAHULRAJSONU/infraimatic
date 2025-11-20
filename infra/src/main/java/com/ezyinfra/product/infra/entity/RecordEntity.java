@@ -1,6 +1,6 @@
 package com.ezyinfra.product.infra.entity;
 
-import com.ezyinfra.product.domain.EntryStatus;
+import com.ezyinfra.product.common.enums.EntryStatus;
 import com.fasterxml.jackson.databind.JsonNode;
 import jakarta.persistence.*;
 import jakarta.persistence.ForeignKey;

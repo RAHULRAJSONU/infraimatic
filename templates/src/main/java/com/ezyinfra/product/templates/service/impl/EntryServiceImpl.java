@@ -3,7 +3,7 @@ package com.ezyinfra.product.templates.service.impl;
 import com.ezyinfra.product.common.dto.EntryDto;
 import com.ezyinfra.product.common.exception.NotFoundException;
 import com.ezyinfra.product.common.exception.ValidationException;
-import com.ezyinfra.product.domain.EntryStatus;
+import com.ezyinfra.product.common.enums.EntryStatus;
 import com.ezyinfra.product.infra.entity.RecordEntity;
 import com.ezyinfra.product.infra.entity.TemplateDefinitionEntity;
 import com.ezyinfra.product.infra.repository.RecordRepository;
@@ -37,14 +37,14 @@ public class EntryServiceImpl implements EntryService {
     private final ObjectMapper mapper; // injected by Spring
 
     @Override
-    public EntryDto createEntry(String tenantId, String type, Integer version,
+    public EntryDto createEntry(String tenantId, String type,
                                 JsonNode normalized, JsonNode payload,
                                 JsonNode processingMeta) {
 
         TemplateDefinitionEntity template = templateRepository
-                .findByTenantIdAndTypeAndVersion(tenantId, type, version)
+                .findTopByTenantIdAndTypeOrderByVersionDesc(tenantId, type)
                 .orElseThrow(() -> new NotFoundException(
-                        "Template not found: tenant=" + tenantId + ", type=" + type + ", version=" + version));
+                        "Template not found: tenant=" + tenantId + ", type=" + type));
 
         // Build schema directly from the JsonNode stored on the template
         JsonSchema schema = SCHEMA_FACTORY.getSchema(template.getJsonSchema());
@@ -66,7 +66,7 @@ public class EntryServiceImpl implements EntryService {
         record.setTenantId(tenantId);
         record.setType(type);
         record.setTemplate(template);
-        record.setTemplateVersion(version);
+        record.setTemplateVersion(template.getVersion());
         record.setStatus(EntryStatus.SUCCESS);
         record.setNormalized(normalized);
         record.setPayload(payload);

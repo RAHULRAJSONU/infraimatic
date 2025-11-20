@@ -17,6 +17,8 @@ public interface TemplateDefinitionRepository extends JpaRepository<TemplateDefi
 
     Optional<TemplateDefinitionEntity> findByTenantIdAndTypeAndVersion(String tenantId, String type, Integer version);
 
+    Optional<TemplateDefinitionEntity> findTopByTenantIdAndTypeOrderByVersionDesc(String tenantId, String type);
+
     List<TemplateDefinitionEntity> findByTenantIdAndTypeOrderByVersionDesc(String tenantId, String type);
 
     /**

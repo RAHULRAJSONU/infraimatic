@@ -37,7 +37,7 @@ public class EntryController {
                                                 @PathVariable("templateType") String templateType,
                                                 @PathVariable("version") Integer version,
                                                 @RequestBody @Valid JsonNode normalized) {
-        EntryDto dto = entryService.createEntry(tenantId, templateType, version, normalized, null, null);
+        EntryDto dto = entryService.createEntry(tenantId, templateType, normalized, null, null);
         return ResponseEntity.status(HttpStatus.CREATED).body(dto);
     }
 

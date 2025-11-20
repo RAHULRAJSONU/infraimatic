@@ -77,6 +77,10 @@ management:
   endpoint:
     health:
       show-details: when_authorized
+  metrics:
+    export:
+      prometheus:
+        enabled: true
 
 infraimatic:
   security:
@@ -107,26 +111,26 @@ springdoc:
 
 # Identity config
 identity:
-  ui-host: http://localhost:3000
+  ui-host: ${IDENTITY_UI_HOST:http://localhost:3000}
   security:
-    privateKeyPath: "C:/Users/Developer/.ssh/private_key.pem"
-    publicKeyPath: "C:/Users/Developer/.ssh/public_key.pem"
-    keyBeginMarker: -----BEGIN PRIVATE KEY-----
-    keyEndMarker: -----END PRIVATE KEY-----
+    privateKeyPath: ${IDENTITY_PRIVATE_KEY_PATH:/run/secrets/identity_private_key.pem}
+    publicKeyPath: ${IDENTITY_PUBLIC_KEY_PATH:/run/secrets/identity_public_key.pem}
+    keyBeginMarker: ${IDENTITY_KEY_BEGIN_MARKER:-----BEGIN PRIVATE KEY-----}
+    keyEndMarker: ${IDENTITY_KEY_END_MARKER:-----END PRIVATE KEY-----}
     password:
-      validationRegex: "^(?=.*[0-9])(?=.*[?!@#$%^&*\\\\/])(?=.*[A-Z])(?=.*[a-z])[a-zA-Z0-9?!@#$%^&*\\\\/].{8,30}$"
-      validationMessage: Invalid password, password should contain at least one lowercase, one uppercase, one digit and one special character. Length should be 8-30 characters.
-      isPasswordUsageAllowed: false # Can not use old passwords
-      oldPasswordSpan: 7 # can not use last 7 passwords
+      validationRegex: ${IDENTITY_PASSWORD_VALIDATION_REGEX:"^(?=.*[0-9])(?=.*[?!@#$%^&*\\\\/])(?=.*[A-Z])(?=.*[a-z])[a-zA-Z0-9?!@#$%^&*\\\\/].{8,30}$"}
+      validationMessage: ${IDENTITY_PASSWORD_VALIDATION_MESSAGE:Invalid password, password should contain at least one lowercase, one uppercase, one digit and one special character. Length should be 8-30 characters.}
+      isPasswordReUsageAllowed: ${IDENTITY_PASSWORD_REUSABLE:false} # Can not use old passwords
+      oldPasswordSpan: ${IDENTITY_PASSWORD_OLD_SPAN:7} # can not use last 7 passwords
     resetPassword:
-      tokenValidityInSecond: 600
+      tokenValidityInSecond: ${IDENTITY_RESET_PASSWORD_TOKEN_VALIDITY:600}
       redirectUrl: /identity/reset-password
-    secureRandomChar: "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
+    secureRandomChar: ${IDENTITY_SECURE_RANDOM_CHAR:"0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"}
     jwt:
-      expiration: 86400000
+      expiration: ${IDENTITY_JWT_EXPIRATION:86400000}
       refresh-token:
-        expiration: 604800000
-      secret-key: eyJhbGciOiJIUzUxMiJ9eyJzdWIiOiJzaHViaGFtLmd1cHRhQGdtYWlsLmNvbSIsImlhdCI6MTY4NzI4NjE3OCwiZXhwIjoxNjg3Mjg5Nzc4fQw4Uc4lHiEPzGXlIWCpyCaLNPoYlarPtNAIrN1OAZqaAxAFLHyDMnETa8BVRQ9cztp4X6lFwlELHsp4j5MyXOcg
+        expiration: ${IDENTITY_JWT_REFRESH_EXPIRATION:604800000}
+      secret-key: ${IDENTITY_JWT_SECRET_KEY:eyJhbGciOiJIUzUxMiJ9eyJzdWIiOiJzaHViaGFtLmd1cHRhQGdtYWlsLmNvbSIsImlhdCI6MTY4NzI4NjE3OCwiZXhwIjoxNjg3Mjg5Nzc4fQw4Uc4lHiEPzGXlIWCpyCaLNPoYlarPtNAIrN1OAZqaAxAFLHyDMnETa8BVRQ9cztp4X6lFwlELHsp4j5MyXOcg}
 #Logging Conf
 logging:
   level:
@@ -142,3 +146,38 @@ logging:
       - debug
       - error
       - warn
+
+# Broker settings — used by the DB-backed MessageBroker (JdbcMessageBroker)
+broker:
+  # Number of partitions to use for topics; producers must use the same value to compute partition.
+  # Increase to allow more parallelism at the cost of more DB contention.
+  partitions: 8
+
+  # Consumer-related defaults (per consumer runtime)
+  consumer:
+    # logical consumer group id for this service
+    group: whatsapp-processor
+
+    # number of worker threads (partition claim attempts) per consumer instance
+    workers: 4
+
+    # batch size to fetch messages per poll
+    batch-size: 20
+
+    # maximum number of processing attempts before moving message to DLQ
+    max-attempts: 5
+
+    # base backoff milliseconds (exponential backoff applied per attempt)
+    base-backoff-millis: 500
+
+    # maximum backoff milliseconds (cap)
+    max-backoff-millis: 30000
+
+    # idle delay between polls when no work found
+    idle-delay-millis: 200
+
+    # partitions claimed TTL (ms) — advisory lock semantics; used only conceptually here
+    claim-lock-ttl-millis: 60000
+
+    # poll interval (ms) - how often workers try to claim new partitions if none available
+    poll-interval-ms: 500
