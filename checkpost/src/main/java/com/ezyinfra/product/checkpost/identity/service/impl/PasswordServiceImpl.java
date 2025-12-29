@@ -1,10 +1,9 @@
 package com.ezyinfra.product.checkpost.identity.service.impl;
 
-import com.ezyinfra.product.common.enums.UserStatus;
-import com.ezyinfra.product.common.exception.AuthException;
-import com.ezyinfra.product.common.exception.ResourceNotFoundException;
 import com.ezyinfra.product.checkpost.identity.config.IdentityProperties;
 import com.ezyinfra.product.checkpost.identity.connector.UserEmailNotificationHelper;
+import com.ezyinfra.product.checkpost.identity.crypto.PasswordStrengthResult;
+import com.ezyinfra.product.checkpost.identity.crypto.PasswordStrengthValidator;
 import com.ezyinfra.product.checkpost.identity.crypto.RsaEncryptionUtils;
 import com.ezyinfra.product.checkpost.identity.crypto.impl.KeyLoaderFactory;
 import com.ezyinfra.product.checkpost.identity.data.entity.PasswordResetToken;
@@ -13,6 +12,9 @@ import com.ezyinfra.product.checkpost.identity.data.model.ChangePasswordRequest;
 import com.ezyinfra.product.checkpost.identity.data.repository.PasswordResetTokenRepository;
 import com.ezyinfra.product.checkpost.identity.data.repository.UserRepository;
 import com.ezyinfra.product.checkpost.identity.service.PasswordService;
+import com.ezyinfra.product.common.enums.UserStatus;
+import com.ezyinfra.product.common.exception.AuthException;
+import com.ezyinfra.product.common.exception.ResourceNotFoundException;
 import com.ezyinfra.product.notification.email.model.EmailTemplate;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -20,14 +22,13 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
 import java.security.SecureRandom;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
 import java.util.Map;
 import java.util.Optional;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 @Slf4j
 @Service
@@ -56,7 +57,8 @@ public class PasswordServiceImpl implements PasswordService {
         try {
             log.info("privateKeyPath: {}",identityProperties.getPrivateKeyPath());
             log.info("publicKeyPath: {}",identityProperties.getPublicKeyPath());
-            var keyLoader = KeyLoaderFactory.createFileKeyLoader(
+            var keyLoader = KeyLoaderFactory.createKeyProvider(
+                    identityProperties.getEncryptionKeyProvider(),
                     identityProperties.getPrivateKeyPath(),
                     identityProperties.getPublicKeyPath()
             );
@@ -81,13 +83,11 @@ public class PasswordServiceImpl implements PasswordService {
 
     @Override
     public boolean validatePasswordStrength(String password) {
-        Pattern pattern = Pattern.compile(identityProperties.getPassword().getValidationRegex());
-        Matcher matcher = pattern.matcher(password);
-        if (matcher.matches()) {
+        PasswordStrengthResult strengthResult = PasswordStrengthValidator.validate(password);
+        if(strengthResult.valid()){
             return Boolean.TRUE;
-        } else {
-            throw new AuthException(identityProperties.getPassword().getValidationMessage());
         }
+        throw new AuthException(strengthResult.message());
     }
 
     @Override

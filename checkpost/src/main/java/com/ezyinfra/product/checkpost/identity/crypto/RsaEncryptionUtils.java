@@ -1,8 +1,8 @@
 package com.ezyinfra.product.checkpost.identity.crypto;
 
+import javax.crypto.Cipher;
 import java.security.PrivateKey;
 import java.security.PublicKey;
-import javax.crypto.Cipher;
 
 public final class RsaEncryptionUtils {
 

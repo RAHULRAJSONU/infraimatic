@@ -1,9 +1,9 @@
 package com.ezyinfra.product.checkpost.identity.service.impl;
 
-import com.ezyinfra.product.common.exception.ResourceNotFoundException;
 import com.ezyinfra.product.checkpost.identity.data.entity.UserGroup;
 import com.ezyinfra.product.checkpost.identity.data.repository.UserGroupRepository;
 import com.ezyinfra.product.checkpost.identity.service.UserGroupService;
+import com.ezyinfra.product.common.exception.ResourceNotFoundException;
 import jakarta.annotation.Nullable;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;

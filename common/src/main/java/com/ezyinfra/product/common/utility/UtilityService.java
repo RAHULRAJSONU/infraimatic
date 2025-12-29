@@ -2,6 +2,7 @@ package com.ezyinfra.product.common.utility;
 
 import org.apache.logging.log4j.util.Strings;
 
+import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.text.Normalizer;
 import java.util.*;
@@ -132,6 +133,35 @@ public class UtilityService {
         return key.replaceAll(beginMarker, "")
                 .replaceAll(endMarker, "")
                 .replaceAll("\\s+", "");
+    }
+
+    public static Map<String, String> parseFormBody(String body) {
+        Map<String, String> map = new HashMap<>();
+
+        for (String pair : body.split("&")) {
+            int idx = pair.indexOf('=');
+            if (idx > 0) {
+                String key = URLDecoder.decode(pair.substring(0, idx), StandardCharsets.UTF_8);
+                String value = URLDecoder.decode(pair.substring(idx + 1), StandardCharsets.UTF_8);
+                map.put(key, value);
+            }
+        }
+        return map;
+    }
+
+    public static Map<String, String> parseFormBody(byte[] body) {
+        String payload = new String(body);
+        Map<String, String> map = new HashMap<>();
+
+        for (String pair : payload.split("&")) {
+            int idx = pair.indexOf('=');
+            if (idx > 0) {
+                String key = URLDecoder.decode(pair.substring(0, idx), StandardCharsets.UTF_8);
+                String value = URLDecoder.decode(pair.substring(idx + 1), StandardCharsets.UTF_8);
+                map.put(key, value);
+            }
+        }
+        return map;
     }
 
 }

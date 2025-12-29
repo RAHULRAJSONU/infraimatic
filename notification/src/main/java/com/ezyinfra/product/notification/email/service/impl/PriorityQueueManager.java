@@ -1,9 +1,9 @@
 package com.ezyinfra.product.notification.email.service.impl;
 
 
-import com.google.common.base.Preconditions;
 import com.ezyinfra.product.common.utility.TimeUtils;
 import com.ezyinfra.product.notification.email.model.EmailSchedulingData;
+import com.google.common.base.Preconditions;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 

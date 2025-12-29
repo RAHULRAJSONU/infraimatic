@@ -27,31 +27,28 @@ public class TemplateController {
 
     private final TemplateService templateService;
 
-    @GetMapping("/{tenantId}/templates/{type}/{version}")
+    @GetMapping("/templates/{type}/{version}")
     @Operation(summary = "Get a specific version of a template")
     public ResponseEntity<TemplateDto> getTemplate(
-            @PathVariable("tenantId") String tenantId,
             @PathVariable("type") String type,
             @PathVariable("version") Integer version) {
-        TemplateDto dto = templateService.getTemplate(tenantId, type, version);
+        TemplateDto dto = templateService.getTemplate(type, version);
         return ResponseEntity.ok(dto);
     }
 
-    @GetMapping("/{tenantId}/templates/{type}")
+    @GetMapping("/templates/{type}")
     @Operation(summary = "List all versions of a template type for a tenant")
     public ResponseEntity<List<TemplateDto>> listTemplates(
-            @PathVariable("tenantId") String tenantId,
             @PathVariable("type") String type) {
-        return ResponseEntity.ok(templateService.listTemplates(tenantId, type));
+        return ResponseEntity.ok(templateService.listTemplates(type));
     }
 
-    @PostMapping("/{tenantId}/templates/{type}")
+    @PostMapping("/templates/{type}")
     @Operation(summary = "Create a new version of a template")
     public ResponseEntity<TemplateDto> createTemplate(
-            @PathVariable("tenantId") String tenantId,
             @PathVariable("type") String type,
             @RequestBody TemplateCreateRequest request) {
-        TemplateDto dto = templateService.createTemplate(tenantId, type, request.name(), request.jsonSchema());
+        TemplateDto dto = templateService.createTemplate(type, request.name(), request.jsonSchema());
         return ResponseEntity.status(HttpStatus.CREATED).body(dto);
     }
 }

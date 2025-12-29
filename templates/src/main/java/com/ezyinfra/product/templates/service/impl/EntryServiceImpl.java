@@ -1,9 +1,9 @@
 package com.ezyinfra.product.templates.service.impl;
 
 import com.ezyinfra.product.common.dto.EntryDto;
+import com.ezyinfra.product.common.enums.EntryStatus;
 import com.ezyinfra.product.common.exception.NotFoundException;
 import com.ezyinfra.product.common.exception.ValidationException;
-import com.ezyinfra.product.common.enums.EntryStatus;
 import com.ezyinfra.product.infra.entity.RecordEntity;
 import com.ezyinfra.product.infra.entity.TemplateDefinitionEntity;
 import com.ezyinfra.product.infra.repository.RecordRepository;
@@ -16,6 +16,7 @@ import com.networknt.schema.JsonSchemaFactory;
 import com.networknt.schema.SpecVersion;
 import com.networknt.schema.ValidationMessage;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -24,6 +25,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.*;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -37,18 +39,17 @@ public class EntryServiceImpl implements EntryService {
     private final ObjectMapper mapper; // injected by Spring
 
     @Override
-    public EntryDto createEntry(String tenantId, String type,
+    public EntryDto createEntry(String type,
                                 JsonNode normalized, JsonNode payload,
                                 JsonNode processingMeta) {
-
+        log.info("Creating entry with type: {}, normalized payload: {}, payload: {}, processingMeta: {}",type,normalized,payload,processingMeta);
         TemplateDefinitionEntity template = templateRepository
-                .findTopByTenantIdAndTypeOrderByVersionDesc(tenantId, type)
+                .findTopByTypeOrderByVersionDesc(type)
                 .orElseThrow(() -> new NotFoundException(
-                        "Template not found: tenant=" + tenantId + ", type=" + type));
+                        "Template not found: type=" + type));
 
         // Build schema directly from the JsonNode stored on the template
         JsonSchema schema = SCHEMA_FACTORY.getSchema(template.getJsonSchema());
-
         // Validate normalized payload
         Set<ValidationMessage> violations = schema.validate(normalized);
         if (!violations.isEmpty()) {
@@ -58,12 +59,12 @@ public class EntryServiceImpl implements EntryService {
                             "path", vm.getEvaluationPath(),
                             "message", vm.getMessage()))
                     .collect(Collectors.toList()));
+            log.error("Normalized payload failed schema validation, details: {}",details);
             throw new ValidationException("Normalized payload failed schema validation", details);
         }
 
         // Persist record
         RecordEntity record = new RecordEntity();
-        record.setTenantId(tenantId);
         record.setType(type);
         record.setTemplate(template);
         record.setTemplateVersion(template.getVersion());
@@ -78,9 +79,9 @@ public class EntryServiceImpl implements EntryService {
     }
 
     @Override
-    public EntryDto getEntry(String tenantId, String type, Integer version, UUID id) {
-        RecordEntity record = recordRepository.findByIdAndTenantId(id, tenantId)
-                .orElseThrow(() -> new NotFoundException("Submission not found: id=" + id + ", tenant=" + tenantId));
+    public EntryDto getEntry(String type, Integer version, UUID id) {
+        RecordEntity record = recordRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Submission not found: id=" + id));
         if (!Objects.equals(type, record.getType()) ||
                 !Objects.equals(version, record.getTemplateVersion())) {
             throw new NotFoundException("Submission does not match type/version");
@@ -89,30 +90,30 @@ public class EntryServiceImpl implements EntryService {
     }
 
     @Override
-    public EntryDto getEntry(String tenantId, String type, UUID id) {
-        RecordEntity record = recordRepository.findByIdAndTenantId(id, tenantId)
-                .orElseThrow(() -> new NotFoundException("Entry not found: id=" + id + ", tenant=" + tenantId));
+    public EntryDto getEntry(String type, UUID id) {
+        RecordEntity record = recordRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Entry not found: id=" + id));
         return toDto(record);
     }
 
     @Override
-    public List<EntryDto> listEntries(String tenantId, String type, Integer version) {
-        return recordRepository.findByTenantIdAndTypeAndTemplateVersion(tenantId, type, version)
+    public List<EntryDto> listEntries(String type, Integer version) {
+        return recordRepository.findByTypeAndTemplateVersion(type, version)
                 .stream()
                 .map(this::toDto)
                 .collect(Collectors.toList());
     }
 
     @Override
-    public Page<EntryDto> listEntriesPageable(String tenantId, String type, Integer version, Pageable pageable) {
-        Page<EntryDto> page = recordRepository.findByTenantIdAndTypeAndTemplateVersion(tenantId, type, version, pageable)
+    public Page<EntryDto> listEntriesPageable(String type, Integer version, Pageable pageable) {
+        Page<EntryDto> page = recordRepository.findByTypeAndTemplateVersion(type, version, pageable)
                 .map(this::toDto);
         return page;
     }
 
     @Override
-    public Page<EntryDto> listEntriesPageable(String tenantId, String type, Pageable pageable) {
-        Page<EntryDto> page = recordRepository.findByTenantIdAndType(tenantId, type, pageable)
+    public Page<EntryDto> listEntriesPageable(String type, Pageable pageable) {
+        Page<EntryDto> page = recordRepository.findByType(type, pageable)
                 .map(this::toDto);
         return page;
     }

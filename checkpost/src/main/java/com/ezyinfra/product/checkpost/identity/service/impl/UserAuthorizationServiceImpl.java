@@ -1,6 +1,5 @@
 package com.ezyinfra.product.checkpost.identity.service.impl;
 
-import com.ezyinfra.product.common.exception.AuthException;
 import com.ezyinfra.product.checkpost.identity.data.entity.Privilege;
 import com.ezyinfra.product.checkpost.identity.data.entity.Role;
 import com.ezyinfra.product.checkpost.identity.data.entity.User;
@@ -8,16 +7,12 @@ import com.ezyinfra.product.checkpost.identity.data.repository.RoleRepository;
 import com.ezyinfra.product.checkpost.identity.data.repository.UserRepository;
 import com.ezyinfra.product.checkpost.identity.service.PrivilegeService;
 import com.ezyinfra.product.checkpost.identity.service.UserAuthorizationService;
+import com.ezyinfra.product.common.exception.AuthException;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 @Slf4j
 @Service

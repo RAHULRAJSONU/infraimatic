@@ -1,15 +1,14 @@
 package com.ezyinfra.product.checkpost.identity.service.impl;
 
 import com.ezyinfra.product.checkpost.identity.connector.UserEmailNotificationHelper;
+import com.ezyinfra.product.checkpost.identity.data.entity.Role;
 import com.ezyinfra.product.checkpost.identity.data.entity.Token;
 import com.ezyinfra.product.checkpost.identity.data.entity.User;
-import com.ezyinfra.product.checkpost.identity.data.entity.Role;
 import com.ezyinfra.product.checkpost.identity.data.model.AuthenticationRequest;
 import com.ezyinfra.product.checkpost.identity.data.model.AuthenticationResponse;
 import com.ezyinfra.product.checkpost.identity.data.record.UserCreateRecord;
 import com.ezyinfra.product.checkpost.identity.data.repository.TokenRepository;
 import com.ezyinfra.product.checkpost.identity.data.repository.UserRepository;
-import com.ezyinfra.product.checkpost.identity.service.*;
 import com.ezyinfra.product.checkpost.identity.service.*;
 import com.ezyinfra.product.common.enums.TokenType;
 import com.ezyinfra.product.common.enums.UserStatus;
@@ -18,7 +17,6 @@ import com.ezyinfra.product.common.utility.AppConstant;
 import com.ezyinfra.product.notification.email.model.EmailTemplate;
 import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.transaction.Transactional;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.security.authentication.AuthenticationManager;

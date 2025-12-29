@@ -1,11 +1,12 @@
 package com.ezyinfra.product.checkpost.identity.service.impl;
 
-import com.ezyinfra.product.common.enums.UserStatus;
-import com.ezyinfra.product.common.exception.ResourceNotFoundException;
 import com.ezyinfra.product.checkpost.identity.data.entity.User;
 import com.ezyinfra.product.checkpost.identity.data.record.UserUpdateRequest;
 import com.ezyinfra.product.checkpost.identity.data.repository.UserRepository;
 import com.ezyinfra.product.checkpost.identity.service.UserService;
+import com.ezyinfra.product.checkpost.identity.tenant.config.TenantContext;
+import com.ezyinfra.product.common.enums.UserStatus;
+import com.ezyinfra.product.common.exception.ResourceNotFoundException;
 import jakarta.annotation.Nullable;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -13,8 +14,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.UUID;
 
 import static com.ezyinfra.product.common.utility.UtilityService.nullSafeOperation;
@@ -91,6 +94,24 @@ public class UserServiceImpl implements UserService {
         user.setStatus(status);
         log.info("Persisting updated user entity: {}", user);
         return userRepository.save(user);
+    }
+
+    @Override
+    public Optional<User> findByPhoneNumberAndStatus(String phoneNumber, @Nullable UserStatus status) {
+        Objects.requireNonNull(phoneNumber, "Invalid mobile number: " + phoneNumber);
+        return userRepository.findByPhoneNumberAndStatus(phoneNumber, status);
+    }
+
+    @Override
+    public Optional<String> findTenantIdByMobile(String phoneNumber) {
+        log.info("Finding tenant for tenantId: {}, and phoneNumber: {}", TenantContext.getCurrentTenantId(),phoneNumber);
+        Objects.requireNonNull(phoneNumber, "Invalid mobile number: " + phoneNumber);
+        Optional<User> user = findByPhoneNumberAndStatus(phoneNumber, UserStatus.ACTIVE);
+        if(user.isPresent()){
+            User currentUser = user.get();
+            return Optional.of(currentUser.getTenantId());
+        }
+        return Optional.empty();
     }
 
 }

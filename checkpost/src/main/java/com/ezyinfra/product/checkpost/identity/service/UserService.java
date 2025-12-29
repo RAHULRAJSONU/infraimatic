@@ -1,17 +1,17 @@
 package com.ezyinfra.product.checkpost.identity.service;
 
-import com.ezyinfra.product.common.enums.UserStatus;
 import com.ezyinfra.product.checkpost.identity.data.entity.User;
 import com.ezyinfra.product.checkpost.identity.data.record.UserUpdateRequest;
+import com.ezyinfra.product.common.enums.UserStatus;
 import jakarta.annotation.Nullable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 public interface UserService {
-
 
     Page<User> findAll(Pageable p, @Nullable UserStatus status);
 
@@ -23,4 +23,7 @@ public interface UserService {
 
     User changeUserStatus(UUID id, UserStatus status);
 
+    Optional<String> findTenantIdByMobile(String mobile);
+
+    Optional<User> findByPhoneNumberAndStatus(String phoneNumber, @Nullable UserStatus status);
 }

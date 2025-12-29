@@ -6,25 +6,8 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import jakarta.persistence.Column;
-import jakarta.persistence.ElementCollection;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.JoinTable;
-import jakarta.persistence.Lob;
-import jakarta.persistence.ManyToMany;
-import jakarta.persistence.Table;
-import jakarta.persistence.Temporal;
-import jakarta.persistence.TemporalType;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
+import jakarta.persistence.*;
+import lombok.*;
 import org.hibernate.annotations.DynamicUpdate;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -33,18 +16,12 @@ import org.springframework.security.core.userdetails.UserDetails;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 @Getter
 @Setter
 @Entity
 @Builder
-@ToString
 @DynamicUpdate
 @JsonDeserialize
 @NoArgsConstructor
@@ -187,5 +164,32 @@ public class User extends AbstractPersistable implements UserDetails {
             }
         }
         this.status = status;
+    }
+
+    @Override
+    public String toString() {
+        return "User{" +
+                "givenName='" + givenName + '\'' +
+                ", middleName='" + middleName + '\'' +
+                ", familyName='" + familyName + '\'' +
+                ", nickname='" + nickname + '\'' +
+                ", preferredUsername='" + preferredUsername + '\'' +
+                ", address='" + address + '\'' +
+                ", email='" + email + '\'' +
+                ", gender=" + gender +
+                ", birthdate=" + birthdate +
+                ", zoneInfo='" + zoneInfo + '\'' +
+                ", website='" + website + '\'' +
+                ", username='" + username + '\'' +
+                ", phoneNumber='" + phoneNumber + '\'' +
+                ", lastLogin=" + lastLogin +
+                ", picture='" + picture + '\'' +
+                ", locale='" + locale + '\'' +
+                ", enabled=" + enabled +
+                ", expired=" + expired +
+                ", emailVerified=" + emailVerified +
+                ", phoneNumberVerified=" + phoneNumberVerified +
+                ", status=" + status +
+                '}';
     }
 }

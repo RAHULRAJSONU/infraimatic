@@ -1,5 +1,6 @@
 google:
   drive:
+    enabled: false
     credentials: classpath:service-account.json
     upload-folder: YOUR_FOLDER_ID_HERE
     chunk-size: 10485760    # 10MB

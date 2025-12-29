@@ -1,8 +1,8 @@
 package com.ezyinfra.product.notification.email.service.impl;
 
-import com.google.common.base.Preconditions;
 import com.ezyinfra.product.notification.email.model.EmailSchedulingData;
 import com.ezyinfra.product.notification.email.service.PersistenceService;
+import com.google.common.base.Preconditions;
 import lombok.NonNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;

@@ -7,11 +7,13 @@ import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.annotations.TenantId;
 import org.hibernate.annotations.UpdateTimestamp;
 import org.hibernate.type.SqlTypes;
 import org.springframework.data.annotation.LastModifiedBy;
 import org.springframework.data.domain.Persistable;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+
 import java.io.Serial;
 import java.io.Serializable;
 import java.time.Instant;
@@ -33,6 +35,10 @@ public abstract class AbstractPersistable implements Persistable<UUID>, Serializ
     private UUID id;
 
     private boolean deleted;
+
+    @TenantId
+    @Column(name = "tenant_id", nullable = false, updatable = false)
+    private String tenantId;
 
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(name = "metadata", columnDefinition = "jsonb")

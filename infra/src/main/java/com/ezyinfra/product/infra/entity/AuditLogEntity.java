@@ -2,10 +2,9 @@ package com.ezyinfra.product.infra.entity;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import jakarta.persistence.*;
-import jakarta.persistence.Index;
-import jakarta.persistence.Table;
 import lombok.*;
-import org.hibernate.annotations.*;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
 import java.time.Instant;
@@ -24,6 +23,7 @@ import java.util.UUID;
                 @Index(name = "idx_audit_created_at", columnList = "created_at")
         }
 )
+@EqualsAndHashCode
 public class AuditLogEntity {
 
     @Id

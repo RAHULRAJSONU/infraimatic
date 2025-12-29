@@ -1,11 +1,11 @@
 package com.ezyinfra.product.checkpost.identity.filter;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.ezyinfra.product.checkpost.identity.data.repository.TokenRepository;
+import com.ezyinfra.product.checkpost.identity.service.JwtService;
 import com.ezyinfra.product.common.exception.ApiErrorResponse;
 import com.ezyinfra.product.common.exception.AuthException;
 import com.ezyinfra.product.common.utility.AppConstant;
-import com.ezyinfra.product.checkpost.identity.data.repository.TokenRepository;
-import com.ezyinfra.product.checkpost.identity.service.JwtService;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -20,7 +20,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
-import org.springframework.stereotype.Component;
 import org.springframework.util.AntPathMatcher;
 import org.springframework.web.filter.OncePerRequestFilter;
 

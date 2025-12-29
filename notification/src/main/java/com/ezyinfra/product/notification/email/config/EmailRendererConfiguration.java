@@ -1,10 +1,10 @@
 package com.ezyinfra.product.notification.email.config;
 
-import com.google.common.annotations.VisibleForTesting;
 import com.ezyinfra.product.notification.email.logging.EmailRenderer;
 import com.ezyinfra.product.notification.email.logging.impl.CustomizableEmailRenderer;
 import com.ezyinfra.product.notification.email.logging.impl.CustomizableEmailRenderer.CustomizableEmailRendererBuilder;
 import com.ezyinfra.product.notification.email.logging.impl.EmailFieldFormat;
+import com.google.common.annotations.VisibleForTesting;
 import jakarta.mail.internet.InternetAddress;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;

@@ -32,7 +32,8 @@ public class AppConstant {
             "/configuration/security",
             "/swagger-ui/**",
             "/webjars/**",
-            "/swagger-ui.html");
+            "/swagger-ui.html",
+            "/webhooks/whatsapp");
     static List<Pattern> authExcludedPathPatterns = authExcludedPath.stream()
             .map(AppConstant::convertToRegex)
             .map(Pattern::compile)

@@ -5,7 +5,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.stereotype.Component;
 
 @Setter
 @Getter
@@ -13,7 +12,7 @@ import org.springframework.stereotype.Component;
 @AllArgsConstructor
 @ConfigurationProperties(prefix = "identity.security")
 public class IdentityProperties {
-
+    private String encryptionKeyProvider;
     private String privateKeyPath;
     private String publicKeyPath;
     private String keyBeginMarker;

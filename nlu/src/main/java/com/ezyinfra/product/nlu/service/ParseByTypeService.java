@@ -8,13 +8,17 @@ import com.ezyinfra.product.nlu.dto.ParseByTypeResponse;
 import com.ezyinfra.product.templates.service.EntryService;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.networknt.schema.ValidationMessage;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -44,23 +48,46 @@ public class ParseByTypeService {
         this.confidenceThreshold = confidenceThreshold;
     }
 
+    public JsonNode extractPartial(ParseByTypeRequest req) throws Exception {
+
+        TemplateDefinitionEntity template =
+                templateRepo.findTopByTypeOrderByVersionDesc(req.getType())
+                        .orElseThrow();
+
+        JsonNode schema = template.getJsonSchema();
+
+        String prompt = promptBuilder.buildPartialPatchPrompt(
+                schema,
+                req.getText(),
+                req.getExistingData(),
+                req.getTargetFields()
+        );
+
+        String raw = llm.complete(prompt, req.getOptions());
+        JsonNode patch = extractJson(raw);
+
+        // remove confidence before merge
+        ((ObjectNode) patch).remove("_confidence");
+
+        return patch;
+    }
+
+
+
     public ParseByTypeResponse handle(String tenant, ParseByTypeRequest req) throws Exception {
-        List<TemplateDefinitionEntity> latestTemplate = templateRepo.findByTenantIdAndTypeOrderByVersionDesc(tenant, req.type);
-        if(latestTemplate.isEmpty()){
-            throw new IllegalArgumentException("Unknown template type: " + req.type);
-        }
-        JsonNode template = latestTemplate.get(0).getJsonSchema();
+        TemplateDefinitionEntity latestTemplate = templateRepo.findTopByTypeOrderByVersionDesc(req.getType()).orElseThrow();
+        JsonNode template = latestTemplate.getJsonSchema();
 
         // minimal schema – for brevity keep the full schema as-is (can minimize if desired)
         JsonNode minimal = template;
 
         // prompt
-        String prompt = promptBuilder.buildInitialPrompt(minimal, req.text,
+        String prompt = promptBuilder.buildInitialPrompt(minimal, req.getText(),
                 List.of("Megha Rastogi arriving 11 Nov 11:00 with laptop SN LAP-HP-2025-7788"),
-                req.options);
+                req.getOptions());
 
 
-        String raw = llm.complete(prompt, req.options == null ? Map.of() : req.options);
+        String raw = llm.complete(prompt, req.getOptions() == null ? Map.of() : req.getOptions());
 
         JsonNode parsed = extractJson(raw);
         Map<String,Double> conf = extractConfidence(parsed);
@@ -72,8 +99,8 @@ public class ParseByTypeService {
         int attempt = 0;
         while (!errors.isEmpty() && attempt < maxRetries) {
             List<String> missing = errors;
-            String focused = promptBuilder.buildFocusedPrompt(template, req.text, missing, parsed);
-            String raw2 = llm.complete(focused, req.options == null ? Map.of() : req.options);
+            String focused = promptBuilder.buildFocusedPrompt(template, req.getText(), missing, parsed);
+            String raw2 = llm.complete(focused, req.getOptions() == null ? Map.of() : req.getOptions());
             JsonNode patch = extractJson(raw2);
             // merge
             parsed = merge(parsed, patch);
@@ -89,7 +116,7 @@ public class ParseByTypeService {
         Set<ValidationMessage> finalValidation = validator.validate(template, parsed);
         List<String> finalErrors = finalValidation.stream().map(ValidationMessage::getMessage).collect(Collectors.toList());
         boolean needsReview = lowConfidence || !finalErrors.isEmpty();
-        EntryDto newEntry = this.entryService.createEntry(tenant, req.type, parsed, null, null);
+        EntryDto newEntry = this.entryService.createEntry(req.getType(), parsed, null, null);
         log.info("Entry created: {}", newEntry);
         return new ParseByTypeResponse(parsed, conf, finalErrors, raw, List.of());
     }
@@ -108,10 +135,13 @@ public class ParseByTypeService {
         return out;
     }
 
-    private JsonNode merge(JsonNode base, JsonNode patch) {
-        ObjectNode b = base.deepCopy();
-        patch.fields().forEachRemaining(e -> b.set(e.getKey(), e.getValue()));
-        return b;
+    public static JsonNode merge(JsonNode base, JsonNode patch) {
+        ObjectNode result = base == null
+                ? JsonNodeFactory.instance.objectNode()
+                : base.deepCopy();
+
+        patch.fields().forEachRemaining(e -> result.set(e.getKey(), e.getValue()));
+        return result;
     }
 
     private boolean requiredFieldsLowConfidence(JsonNode parsed, Map<String,Double> conf, JsonNode template) {

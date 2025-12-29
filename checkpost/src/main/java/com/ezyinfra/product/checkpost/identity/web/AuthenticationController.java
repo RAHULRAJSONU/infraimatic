@@ -1,10 +1,6 @@
 package com.ezyinfra.product.checkpost.identity.web;
 
-import com.ezyinfra.product.checkpost.identity.data.model.AuthenticationRequest;
-import com.ezyinfra.product.checkpost.identity.data.model.AuthenticationResponse;
-import com.ezyinfra.product.checkpost.identity.data.model.ChangePasswordRequest;
-import com.ezyinfra.product.checkpost.identity.data.model.ResetPassword;
-import com.ezyinfra.product.checkpost.identity.data.model.ResetPasswordRequest;
+import com.ezyinfra.product.checkpost.identity.data.model.*;
 import com.ezyinfra.product.checkpost.identity.data.record.UserCreateRecord;
 import com.ezyinfra.product.checkpost.identity.service.AuthenticationService;
 import com.ezyinfra.product.checkpost.identity.service.PasswordService;
@@ -13,14 +9,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 import java.security.Principal;

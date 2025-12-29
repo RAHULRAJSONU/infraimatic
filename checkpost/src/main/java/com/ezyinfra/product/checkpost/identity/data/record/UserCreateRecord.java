@@ -1,8 +1,8 @@
 package com.ezyinfra.product.checkpost.identity.data.record;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.ezyinfra.product.common.enums.Gender;
 import com.ezyinfra.product.common.enums.UserStatus;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import java.time.LocalDate;
 import java.util.UUID;

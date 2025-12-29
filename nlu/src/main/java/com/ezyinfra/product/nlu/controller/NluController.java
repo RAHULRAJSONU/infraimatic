@@ -1,18 +1,12 @@
 package com.ezyinfra.product.nlu.controller;
 
-import com.ezyinfra.product.common.dto.NluParseRequest;
-import com.ezyinfra.product.common.dto.NluParseResponse;
-import com.ezyinfra.product.common.dto.NluSubmitRequest;
-import com.ezyinfra.product.common.dto.NluSubmitResponse;
 import com.ezyinfra.product.nlu.dto.ParseByTypeRequest;
 import com.ezyinfra.product.nlu.dto.ParseByTypeResponse;
 import com.ezyinfra.product.nlu.service.EnrichmentService;
 import com.ezyinfra.product.nlu.service.ParseByTypeService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;

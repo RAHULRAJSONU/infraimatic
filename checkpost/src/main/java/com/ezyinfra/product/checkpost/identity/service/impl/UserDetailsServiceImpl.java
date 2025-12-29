@@ -1,9 +1,9 @@
 package com.ezyinfra.product.checkpost.identity.service.impl;
 
-import com.ezyinfra.product.common.enums.UserStatus;
 import com.ezyinfra.product.checkpost.identity.data.entity.User;
 import com.ezyinfra.product.checkpost.identity.data.repository.PrivilegeRepository;
 import com.ezyinfra.product.checkpost.identity.data.repository.UserRepository;
+import com.ezyinfra.product.common.enums.UserStatus;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;

@@ -35,8 +35,8 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
-import static com.google.common.base.Preconditions.checkArgument;
 import static com.ezyinfra.product.notification.email.service.impl.ConditionalExpression.SCHEDULER_IS_ENABLED;
+import static com.google.common.base.Preconditions.checkArgument;
 import static java.lang.Math.max;
 import static java.lang.Math.min;
 import static java.util.Comparator.comparing;

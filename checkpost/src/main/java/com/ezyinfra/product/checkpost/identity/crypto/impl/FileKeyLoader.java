@@ -11,9 +11,6 @@ import java.nio.file.Paths;
 import java.security.GeneralSecurityException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
-import java.security.spec.PKCS8EncodedKeySpec;
-import java.security.spec.X509EncodedKeySpec;
-import java.util.function.Function;
 
 public final class FileKeyLoader implements KeyLoader {
     private final Path privatePath, publicPath;

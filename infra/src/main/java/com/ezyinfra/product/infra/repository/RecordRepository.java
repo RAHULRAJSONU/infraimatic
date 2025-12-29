@@ -16,9 +16,9 @@ public interface RecordRepository extends JpaRepository<RecordEntity, UUID> {
 
     Optional<RecordEntity> findByIdAndTenantId(UUID id, String tenantId);
 
-    List<RecordEntity> findByTenantIdAndTypeAndTemplateVersion(String tenantId, String type, Integer templateVersion);
+    List<RecordEntity> findByTypeAndTemplateVersion(String type, Integer templateVersion);
 
-    Page<RecordEntity> findByTenantIdAndTypeAndTemplateVersion(String tenantId, String type, Integer templateVersion, Pageable pageable);
+    Page<RecordEntity> findByTypeAndTemplateVersion(String type, Integer templateVersion, Pageable pageable);
 
-    Page<RecordEntity> findByTenantIdAndType(String tenantId, String type, Pageable pageable);
+    Page<RecordEntity> findByType(String type, Pageable pageable);
 }

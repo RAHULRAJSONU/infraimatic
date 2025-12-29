@@ -1,6 +1,5 @@
 package com.ezyinfra.product.checkpost.identity.service.impl;
 
-import com.ezyinfra.product.common.exception.ResourceNotFoundException;
 import com.ezyinfra.product.checkpost.identity.data.entity.Action;
 import com.ezyinfra.product.checkpost.identity.data.entity.Privilege;
 import com.ezyinfra.product.checkpost.identity.data.entity.Resource;
@@ -9,16 +8,13 @@ import com.ezyinfra.product.checkpost.identity.data.repository.PrivilegeReposito
 import com.ezyinfra.product.checkpost.identity.service.ActionService;
 import com.ezyinfra.product.checkpost.identity.service.PrivilegeService;
 import com.ezyinfra.product.checkpost.identity.service.ResourceService;
+import com.ezyinfra.product.common.exception.ResourceNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 @Slf4j
 @Service

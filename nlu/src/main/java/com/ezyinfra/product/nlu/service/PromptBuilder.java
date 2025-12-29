@@ -3,8 +3,10 @@ package com.ezyinfra.product.nlu.service;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.stereotype.Component;
+
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 @Component
 public class PromptBuilder {
@@ -36,4 +38,50 @@ public class PromptBuilder {
         sb.append("PREVIOUS_JSON:\n").append(previous.toPrettyString()).append("\n\nReturn JSON only.");
         return sb.toString();
     }
+
+    public String buildPartialPatchPrompt(
+            JsonNode fullSchema,
+            String userText,
+            JsonNode existingJson,
+            Set<String> targetFields
+    ) {
+        StringBuilder sb = new StringBuilder();
+
+        sb.append("You are a strict JSON patch generator.\n");
+        sb.append("Your task is to extract ONLY the information explicitly present in the USER MESSAGE.\n");
+        sb.append("Do NOT repeat fields already present unless updating them.\n");
+        sb.append("Do NOT hallucinate values.\n");
+        sb.append("Return JSON ONLY.\n\n");
+
+        sb.append("RULES:\n");
+        sb.append("- Use ONLY property names from the SCHEMA\n");
+        sb.append("- Include only fields you can confidently extract from the message\n");
+        sb.append("- If a field is not mentioned, OMIT it\n");
+        sb.append("- Use null ONLY if the user explicitly indicates absence\n");
+        sb.append("- Include a top-level _confidence map (0..1) ONLY for returned fields\n");
+        sb.append("- Dates must be ISO-8601\n\n");
+
+        sb.append("SCHEMA:\n")
+                .append(fullSchema.toPrettyString())
+                .append("\n\n");
+
+        sb.append("CURRENT_JSON:\n")
+                .append(existingJson == null ? "{}" : existingJson.toPrettyString())
+                .append("\n\n");
+
+        if (targetFields != null && !targetFields.isEmpty()) {
+            sb.append("TARGET_FIELDS (focus on these if present):\n")
+                    .append(targetFields)
+                    .append("\n\n");
+        }
+
+        sb.append("USER_MESSAGE:\n\"\"\"\n")
+                .append(userText)
+                .append("\n\"\"\"\n\n");
+
+        sb.append("Return JSON PATCH only.");
+
+        return sb.toString();
+    }
+
 }

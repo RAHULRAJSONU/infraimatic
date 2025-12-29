@@ -21,9 +21,7 @@ public interface EntryService {
      * normalized payload must conform to the JSON Schema stored against the
      * template definition. If validation fails, a ValidationException is thrown.
      *
-     * @param tenantId       tenant identifier
      * @param type           template type
-     * @param version        template version
      * @param normalized     the normalized payload conforming to the template's JSON schema
      * @param payload        the original payload (may be null if created via NLU)
      * @param processingMeta additional metadata produced during processing (optional)
@@ -31,7 +29,7 @@ public interface EntryService {
      * @throws NotFoundException   if the specified template cannot be found
      * @throws ValidationException if the normalized payload fails schema validation
      */
-    EntryDto createEntry(String tenantId, String type,
+    EntryDto createEntry(String type,
                          JsonNode normalized, JsonNode payload,
                          JsonNode processingMeta);
 
@@ -39,24 +37,23 @@ public interface EntryService {
      * Retrieve a submission by its identifier. Checks that the submission
      * belongs to the tenant and matches the template type/version.
      *
-     * @param tenantId tenant identifier
      * @param type     template type
      * @param version  template version
      * @param id       submission id
      * @return the submission DTO
      * @throws NotFoundException if the submission is not found
      */
-    EntryDto getEntry(String tenantId, String type, Integer version, UUID id);
+    EntryDto getEntry(String type, Integer version, UUID id);
 
-    EntryDto getEntry(String tenantId, String type, UUID id);
+    EntryDto getEntry(String type, UUID id);
 
     /**
      * List submissions for the given tenant, template type and version. For simplicity
      * this method returns all matching submissions without pagination.
      */
-    List<EntryDto> listEntries(String tenantId, String type, Integer version);
+    List<EntryDto> listEntries(String type, Integer version);
 
-    Page<EntryDto> listEntriesPageable(String tenantId, String type, Integer version, Pageable pageable);
+    Page<EntryDto> listEntriesPageable(String type, Integer version, Pageable pageable);
 
-    Page<EntryDto> listEntriesPageable(String tenantId, String type, Pageable pageable);
+    Page<EntryDto> listEntriesPageable(String type, Pageable pageable);
 }

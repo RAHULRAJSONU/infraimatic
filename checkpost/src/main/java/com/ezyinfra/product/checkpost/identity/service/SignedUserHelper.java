@@ -1,7 +1,7 @@
 package com.ezyinfra.product.checkpost.identity.service;
 
-import com.ezyinfra.product.common.utility.AppConstant;
 import com.ezyinfra.product.checkpost.identity.data.entity.User;
+import com.ezyinfra.product.common.utility.AppConstant;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 

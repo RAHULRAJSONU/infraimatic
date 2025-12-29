@@ -23,6 +23,7 @@ import org.hibernate.type.SqlTypes;
                 @UniqueConstraint(name = "uk_attrdef_tenant_ref", columnNames = {"tenant_id", "attribute_ref"})
         }
 )
+@EqualsAndHashCode(callSuper = true)
 public class AttributeDefinitionEntity extends AbstractPersistable {
 
     @Column(name = "attribute_ref", nullable = false, length = 255)

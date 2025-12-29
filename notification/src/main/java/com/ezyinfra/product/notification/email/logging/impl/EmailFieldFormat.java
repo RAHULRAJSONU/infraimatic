@@ -1,7 +1,7 @@
 package com.ezyinfra.product.notification.email.logging.impl;
 
-import com.google.common.base.Preconditions;
 import com.ezyinfra.product.notification.email.logging.LoggingStrategy;
+import com.google.common.base.Preconditions;
 import jakarta.mail.internet.InternetAddress;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;

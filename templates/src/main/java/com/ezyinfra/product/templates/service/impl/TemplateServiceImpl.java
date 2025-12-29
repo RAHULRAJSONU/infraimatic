@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -26,15 +27,14 @@ public class TemplateServiceImpl implements TemplateService {
     private final TemplateDefinitionRepository templateRepository;
 
     @Override
-    public TemplateDto createTemplate(String tenantId, String type, String name, JsonNode jsonSchema) {
+    public TemplateDto createTemplate(String type, String name, JsonNode jsonSchema) {
         // Determine next version
         int nextVersion = 1;
-        List<TemplateDefinitionEntity> existing = templateRepository.findByTenantIdAndTypeOrderByVersionDesc(tenantId, type);
+        List<TemplateDefinitionEntity> existing = templateRepository.findByTypeOrderByVersionDesc(type);
         if (!existing.isEmpty()) {
             nextVersion = existing.get(0).getVersion() + 1;
         }
         TemplateDefinitionEntity entity = new TemplateDefinitionEntity();
-        entity.setTenantId(tenantId);
         entity.setType(type);
         entity.setVersion(nextVersion);
         entity.setName(name);
@@ -44,25 +44,25 @@ public class TemplateServiceImpl implements TemplateService {
     }
 
     @Override
-    public TemplateDto getTemplate(String tenantId, String type, Integer version) {
+    public TemplateDto getTemplate(String type, Integer version) {
         TemplateDefinitionEntity entity = templateRepository
-                .findByTenantIdAndTypeAndVersion(tenantId, type, version)
-                .orElseThrow(() -> new NotFoundException("Template not found: tenant=" + tenantId + ", type=" + type + ", version=" + version));
+                .findByTypeAndVersion(type, version)
+                .orElseThrow(() -> new NotFoundException("Template not found: type=" + type + ", version=" + version));
         return toDto(entity);
     }
 
     @Override
-    public TemplateDto getLatestTemplate(String tenantId, String type) {
-        List<TemplateDefinitionEntity> latestList = templateRepository.findLatest(tenantId, type);
+    public TemplateDto getLatestTemplate(String type) {
+        Optional<TemplateDefinitionEntity> latestList = templateRepository.findTopByTypeOrderByVersionDesc(type);
         if (latestList.isEmpty()) {
-            throw new NotFoundException("Template not found: tenant=" + tenantId + ", type=" + type);
+            throw new NotFoundException("Template not found: type=" + type);
         }
-        return toDto(latestList.get(0));
+        return toDto(latestList.get());
     }
 
     @Override
-    public List<TemplateDto> listTemplates(String tenantId, String type) {
-        return templateRepository.findByTenantIdAndTypeOrderByVersionDesc(tenantId, type)
+    public List<TemplateDto> listTemplates(String type) {
+        return templateRepository.findByTypeOrderByVersionDesc(type)
                 .stream()
                 .map(this::toDto)
                 .collect(Collectors.toList());

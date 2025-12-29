@@ -8,16 +8,16 @@ import com.ezyinfra.product.storage.util.FluxToInputStream;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.auth.oauth2.AccessToken;
 import com.google.auth.oauth2.GoogleCredentials;
-import com.google.auth.oauth2.ServiceAccountCredentials;
 import io.micrometer.core.instrument.MeterRegistry;
+import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
-import org.springframework.stereotype.Service;
 import org.springframework.core.io.buffer.DataBuffer;
+import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 
-import jakarta.annotation.PostConstruct;
 import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -25,6 +25,7 @@ import java.time.Instant;
 import java.util.*;
 
 @Service
+@ConditionalOnProperty(prefix = "google", name = "drive.enabled", havingValue = "true")
 public class GoogleDriveStorageService implements StorageService {
 
     private static final String UPLOAD_SESSION_ENDPOINT = "https://www.googleapis.com/upload/drive/v3/files?uploadType=resumable";

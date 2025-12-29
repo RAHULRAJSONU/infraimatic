@@ -3,6 +3,7 @@ package com.ezyinfra.product.notification.whatsapp.service;
 import com.ezyinfra.product.messaging.broker.MessageBroker;
 import com.ezyinfra.product.notification.whatsapp.model.MessageEntity;
 import com.ezyinfra.product.notification.whatsapp.repository.MessageRepository;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,7 +25,7 @@ public class IncomingMessageService {
     public IncomingMessageService(MessageBroker broker,
                                   MessageRepository messageRepo,
                                   // default 8 partitions, can be overridden in application.yml
-                                  @org.springframework.beans.factory.annotation.Value("${broker.partitions:8}") int partitions) {
+                                  @Value("${broker.partitions:8}") int partitions) {
         this.broker = broker;
         this.messageRepo = messageRepo;
         this.partitions = Math.max(1, partitions);

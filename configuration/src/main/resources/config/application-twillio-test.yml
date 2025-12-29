@@ -1,6 +1,7 @@
 twilio:
-  auth-token: ${TWILIO_AUTH_TOKEN}
+  auth-token: ${TWILIO_AUTH_TOKEN} #40b019a229a7c33b7a253878e3ec1dde
   account-sid: ${TWILIO_ACCOUNT_SID}
   whatsapp-from: ${TWILIO_WHATSAPP_FROM}
+  webhook-path: /webhooks/whatsapp
   webhook:
     enable-signature-validation: true

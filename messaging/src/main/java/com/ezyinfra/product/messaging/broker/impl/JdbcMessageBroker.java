@@ -6,20 +6,27 @@ import com.ezyinfra.product.messaging.model.ConsumerHandle;
 import com.ezyinfra.product.messaging.model.ConsumerProperties;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.micrometer.core.instrument.MeterRegistry;
-import io.micrometer.core.instrument.Timer;
 import io.micrometer.core.instrument.Tags;
+import io.micrometer.core.instrument.Timer;
 import jakarta.annotation.PreDestroy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.jdbc.core.*;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
+
 import javax.sql.DataSource;
-import java.sql.*;
-import java.util.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.ToDoubleFunction;
@@ -74,7 +81,7 @@ public class JdbcMessageBroker implements MessageBroker {
         try {
             final String sql = "INSERT INTO broker_messages(topic, partition, key, payload, status, available_at) " +
                     "VALUES (?, ?, ?, cast(? as jsonb), 'READY', now())";
-            KeyHolder kh = new GeneratedKeyHolder();
+
             final String json;
             try {
                 json = mapper.writeValueAsString(payload);
@@ -82,8 +89,11 @@ public class JdbcMessageBroker implements MessageBroker {
                 throw new RuntimeException("Failed to serialize payload", e);
             }
 
+            KeyHolder kh = new GeneratedKeyHolder();
+
             jdbc.update(con -> {
-                PreparedStatement ps = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+                // explicitly ask for only the "id" column
+                PreparedStatement ps = con.prepareStatement(sql, new String[]{"id"});
                 ps.setString(1, topic);
                 ps.setInt(2, partition);
                 ps.setString(3, key);
@@ -91,8 +101,12 @@ public class JdbcMessageBroker implements MessageBroker {
                 return ps;
             }, kh);
 
-            Number id = Objects.requireNonNull(kh.getKey());
-            long created = id.longValue();
+            Map<String, Object> keyMap = kh.getKeys();
+            if (keyMap == null || !keyMap.containsKey("id")) {
+                throw new IllegalStateException("Insert did not return generated key 'id'");
+            }
+
+            long created = ((Number) keyMap.get("id")).longValue();
             meter.counter("broker.publish.count", "topic", topic).increment();
             return created;
         } finally {

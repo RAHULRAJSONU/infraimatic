@@ -2,10 +2,8 @@ package com.ezyinfra.product.infra.entity;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import jakarta.persistence.*;
-import jakarta.persistence.Index;
-import jakarta.persistence.Table;
 import lombok.*;
-import org.hibernate.annotations.*;
+import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
 @Getter
@@ -25,6 +23,7 @@ import org.hibernate.type.SqlTypes;
                 @Index(name = "idx_tpl_created_at", columnList = "created_at")
         }
 )
+@EqualsAndHashCode(callSuper = true)
 public class TemplateDefinitionEntity  extends AbstractPersistable {
 
     @Column(name = "tenant_id", nullable = false, length = 100)

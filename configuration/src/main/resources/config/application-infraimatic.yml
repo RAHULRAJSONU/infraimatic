@@ -1,5 +1,6 @@
 # Default application configuration for Infraimatic.
 server:
+  forward-headers-strategy: framework
   error:
     include-binding-errors: always
     include-stacktrace: on_param
@@ -13,7 +14,7 @@ spring:
   datasource:
     url: jdbc:postgresql://localhost:5432/infraimatic
     username: postgres
-    password: postgres
+    password: p0$stgres2025
     driver-class-name: org.postgresql.Driver
     hikari:
       maximum-pool-size: 30          # tune per CPU/traffic
@@ -31,6 +32,7 @@ spring:
 #        dialect: org.hibernate.dialect.PostgreSQLDialect
         format_sql: true
         jdbc.time_zone: UTC
+        multiTenancy: DISCRIMINATOR
   flyway:
     enabled: false
     locations: classpath:db/migration
@@ -113,12 +115,13 @@ springdoc:
 identity:
   ui-host: ${IDENTITY_UI_HOST:http://localhost:3000}
   security:
+    encryptionKeyProvider: ${IDENTITY_ENCRYPTION_KEY_PROVIDER:FILE_KEY_PROVIDER}
     privateKeyPath: ${IDENTITY_PRIVATE_KEY_PATH:/run/secrets/identity_private_key.pem}
     publicKeyPath: ${IDENTITY_PUBLIC_KEY_PATH:/run/secrets/identity_public_key.pem}
     keyBeginMarker: ${IDENTITY_KEY_BEGIN_MARKER:-----BEGIN PRIVATE KEY-----}
     keyEndMarker: ${IDENTITY_KEY_END_MARKER:-----END PRIVATE KEY-----}
     password:
-      validationRegex: ${IDENTITY_PASSWORD_VALIDATION_REGEX:"^(?=.*[0-9])(?=.*[?!@#$%^&*\\\\/])(?=.*[A-Z])(?=.*[a-z])[a-zA-Z0-9?!@#$%^&*\\\\/].{8,30}$"}
+      validationRegex: ${IDENTITY_PASSWORD_VALIDATION_REGEX:"^(?=.*[0-9])(?=.*[?!@#$%^&*\\])(?=.*[A-Z])(?=.*[a-z])[a-zA-Z0-9?!@#$%^&*\\].{8,30}$"}
       validationMessage: ${IDENTITY_PASSWORD_VALIDATION_MESSAGE:Invalid password, password should contain at least one lowercase, one uppercase, one digit and one special character. Length should be 8-30 characters.}
       isPasswordReUsageAllowed: ${IDENTITY_PASSWORD_REUSABLE:false} # Can not use old passwords
       oldPasswordSpan: ${IDENTITY_PASSWORD_OLD_SPAN:7} # can not use last 7 passwords
@@ -181,3 +184,9 @@ broker:
 
     # poll interval (ms) - how often workers try to claim new partitions if none available
     poll-interval-ms: 500
+
+storage:
+  fs:
+    enabled: true
+    root-dir: D:/Shared/ezyinfra   # Linux/Mac example
+    queue-capacity: 32

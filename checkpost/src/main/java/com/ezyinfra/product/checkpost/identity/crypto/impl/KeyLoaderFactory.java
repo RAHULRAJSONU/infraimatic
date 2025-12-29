@@ -1,18 +1,26 @@
 package com.ezyinfra.product.checkpost.identity.crypto.impl;
 
 import com.ezyinfra.product.checkpost.identity.crypto.KeyLoader;
+import com.ezyinfra.product.common.exception.CryptoException;
 
-import java.util.function.Function;
 import java.util.function.Supplier;
 
 public class KeyLoaderFactory {
 
-    public static KeyLoader createFileKeyLoader(String privateKeyPath, String publicKeyPath) {
-        return new FileKeyLoader(privateKeyPath, publicKeyPath);
-    }
-
-    public static KeyLoader createEnvKeyLoader(String privateKeyEnvVar, String publicKeyEnvVar) {
-        return new EnvKeyLoader(privateKeyEnvVar, publicKeyEnvVar);
+    /**
+     * Factory function to create encryption key loader
+     * @param providerType : FILE_KEY_PROVIDER | ENV_KEY_PROVIDER
+     * @param privateKey
+     * @param publicKey
+     * @return KeyLoader
+     * @throws CryptoException : When invalid providerType or invalid key
+     */
+    public static KeyLoader createKeyProvider(String providerType, String privateKey, String publicKey){
+        return switch (providerType){
+            case "FILE_KEY_PROVIDER" -> new FileKeyLoader(privateKey, publicKey);
+            case "ENV_KEY_PROVIDER" -> new EnvKeyLoader(privateKey, publicKey);
+            default -> throw new CryptoException("Invalid Encryption Key Provider.");
+        };
     }
 
     public static KeyLoader createSupplierKeyLoader(Supplier<String> privateKeySupplier, Supplier<String> publicKeySupplier) {

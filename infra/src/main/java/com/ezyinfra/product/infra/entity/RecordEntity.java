@@ -3,11 +3,8 @@ package com.ezyinfra.product.infra.entity;
 import com.ezyinfra.product.common.enums.EntryStatus;
 import com.fasterxml.jackson.databind.JsonNode;
 import jakarta.persistence.*;
-import jakarta.persistence.ForeignKey;
-import jakarta.persistence.Index;
-import jakarta.persistence.Table;
 import lombok.*;
-import org.hibernate.annotations.*;
+import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
 @Getter
@@ -25,6 +22,7 @@ import org.hibernate.type.SqlTypes;
                 @Index(name = "idx_rec_client_submission_id", columnList = "tenant_id,client_submission_id")
         }
 )
+@EqualsAndHashCode(callSuper = true)
 public class RecordEntity  extends AbstractPersistable {
 
     @Column(name = "tenant_id", nullable = false, length = 100)
