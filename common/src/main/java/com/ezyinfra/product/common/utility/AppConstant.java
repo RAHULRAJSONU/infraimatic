@@ -21,8 +21,10 @@ public class AppConstant {
 
     public static final List<String> authExcludedPath = List.of(
             "/api/v1/tenant/register",
-            "/api/v1/user/**",
-            "/api/v1/identity/authn/**",
+            "/api/v1/identity/authn/authenticate",
+            "/api/v1/identity/authn/reset-password",
+            "/api/v1/identity/authn/reset-password/**",
+            "/api/v1/identity/authn/register",
             "/api/v1/oauth/**",
             "/v2/api-docs",
             "/v3/api-docs",

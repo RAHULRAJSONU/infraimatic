@@ -14,5 +14,5 @@ public interface PasswordService {
 
     ResponseEntity<?> sendResetPasswordLink(String userEmail);
 
-    ResponseEntity<?> resetPassword(String token, String password);
+    ResponseEntity<?> resetPassword(String userEmail, String token, String password);
 }

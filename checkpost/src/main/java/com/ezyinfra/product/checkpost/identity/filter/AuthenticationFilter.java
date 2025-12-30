@@ -46,29 +46,13 @@ public class AuthenticationFilter extends OncePerRequestFilter {
     private final TokenRepository tokenRepository;
     private final JwtTenantResolver tenantResolver;
 
-    private static final List<String> EXCLUDED = List.of(
-            "/v3/api-docs",
-            "/v3/api-docs/**",
-            "/swagger-ui/**",
-            "/swagger-ui.html",
-            "/swagger-resources/**",
-            "/configuration/ui",
-            "/configuration/security",
-            "/webjars/**",
-            "/api/v1/tenant/register",
-            "/api/v1/user/**",
-            "/api/v1/identity/authn/**",
-            "/api/v1/oauth/**",
-            "/v2/api-docs"
-    );
-
     private final AntPathMatcher pathMatcher = new AntPathMatcher();
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
         if ("OPTIONS".equalsIgnoreCase(request.getMethod())) return true;
         final String path = request.getServletPath();
-        return EXCLUDED.stream().anyMatch(p -> pathMatcher.match(p, path));
+        return AppConstant.isPathExcluded(path);
     }
 
     @Override

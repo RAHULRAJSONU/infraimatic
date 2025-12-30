@@ -12,13 +12,14 @@ import java.util.Base64;
 @AllArgsConstructor
 @NoArgsConstructor
 public class ResetPasswordRequest {
+    String userEmail;
     String newPassword;
     String confirmPassword;
 
     public ResetPasswordRequest getDecodedPassword() {
         String decodedNewPassword = decodeBase64(newPassword);
         String decodedConfirmPassword = decodeBase64(confirmPassword);
-        return new ResetPasswordRequest(decodedNewPassword, decodedConfirmPassword);
+        return new ResetPasswordRequest(userEmail,decodedNewPassword, decodedConfirmPassword);
     }
 
     private String decodeBase64(String encodedPassword) {

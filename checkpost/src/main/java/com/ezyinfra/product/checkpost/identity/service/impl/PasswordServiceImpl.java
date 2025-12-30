@@ -12,6 +12,8 @@ import com.ezyinfra.product.checkpost.identity.data.model.ChangePasswordRequest;
 import com.ezyinfra.product.checkpost.identity.data.repository.PasswordResetTokenRepository;
 import com.ezyinfra.product.checkpost.identity.data.repository.UserRepository;
 import com.ezyinfra.product.checkpost.identity.service.PasswordService;
+import com.ezyinfra.product.checkpost.identity.service.TenantService;
+import com.ezyinfra.product.checkpost.identity.tenant.config.TenantContext;
 import com.ezyinfra.product.common.enums.UserStatus;
 import com.ezyinfra.product.common.exception.AuthException;
 import com.ezyinfra.product.common.exception.ResourceNotFoundException;
@@ -43,17 +45,19 @@ public class PasswordServiceImpl implements PasswordService {
     @Value("${identity.ui-host}")
     private String uiHost;
     private final RsaEncryptionUtils encryptionUtils;
+    private final TenantService tenantService;
 
     public PasswordServiceImpl(UserRepository repository,
                                PasswordResetTokenRepository passwordResetTokenRepository,
                                PasswordEncoder passwordEncoder,
                                UserEmailNotificationHelper emailNotificationHelper,
-                               IdentityProperties identityProperties) {
+                               IdentityProperties identityProperties, TenantService tenantService) {
         this.repository = repository;
         this.passwordResetTokenRepository = passwordResetTokenRepository;
         this.passwordEncoder = passwordEncoder;
         this.emailNotificationHelper = emailNotificationHelper;
         this.identityProperties = identityProperties;
+        this.tenantService = tenantService;
         try {
             log.info("privateKeyPath: {}",identityProperties.getPrivateKeyPath());
             log.info("publicKeyPath: {}",identityProperties.getPublicKeyPath());
@@ -92,91 +96,109 @@ public class PasswordServiceImpl implements PasswordService {
 
     @Override
     public ResponseEntity<?> changePassword(ChangePasswordRequest request, String email) {
-        if (request.getNewPassword().equals(request.getCurrentPassword())) {
-            throw new AuthException("New password and current password should not be same.");
-        }
-        validatePasswordStrength(request.getCurrentPassword());
-        var user = repository.findByEmailIgnoreCaseAndStatus(email, UserStatus.ACTIVE).orElseThrow();
-        if (passwordEncoder.matches(request.getCurrentPassword(), user.getPassword())) {
-            user.setPassword(passwordEncoder.encode(request.getNewPassword()));
-            repository.save(user);
-            emailNotificationHelper.notifyUser(
-                    user,
-                    EmailTemplate.IDENTITY_PASSWORD_CHANGE_SUCCESS,
-                    Map.of("name", user.getName())
-            );
-            return ResponseEntity.ok().body("Password changed successfully.");
-        } else {
-            throw new AuthException("Current password is not match with our record.");
-        }
+        String tenantId = tenantService.resolveTenantByEmail(email)
+                .orElseThrow(() -> new AuthException("Invalid credentials"));
+
+        return TenantContext.executeInTenantContext(tenantId, () -> {
+            if (request.getNewPassword().equals(request.getCurrentPassword())) {
+                throw new AuthException("New password and current password should not be same.");
+            }
+            validatePasswordStrength(request.getCurrentPassword());
+            var user = repository.findByEmailIgnoreCaseAndStatus(email, UserStatus.ACTIVE).orElseThrow();
+            if (passwordEncoder.matches(request.getCurrentPassword(), user.getPassword())) {
+                user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+                repository.save(user);
+                emailNotificationHelper.notifyUser(
+                        user,
+                        EmailTemplate.IDENTITY_PASSWORD_CHANGE_SUCCESS,
+                        Map.of("name", user.getName())
+                );
+                return ResponseEntity.ok().body("Password changed successfully.");
+            } else {
+                throw new AuthException("Current password is not match with our record.");
+            }
+        });
     }
 
     @Override
     @Transactional
     public ResponseEntity<?> sendResetPasswordLink(String userEmail) {
-        var user = repository.findByEmailIgnoreCaseAndStatus(userEmail, UserStatus.ACTIVE).orElseThrow(() -> new ResourceNotFoundException("Email not registered with us."));
-        String resetToken = generateResetToken();
-        Optional<PasswordResetToken> passwordResetToken = passwordResetTokenRepository.findByUser(user);
-        PasswordResetToken newPasswordRestToken;
-        if (passwordResetToken.isEmpty()) {
-            newPasswordRestToken = new PasswordResetToken();
-            newPasswordRestToken.setToken(resetToken);
-            newPasswordRestToken.setUser(user);
-            newPasswordRestToken.setExpiryDate(Date.from(Instant.now().plus(identityProperties.getResetPassword().getTokenValidityInSecond(),
-                    ChronoUnit.SECONDS)));
-        } else {
-            newPasswordRestToken = passwordResetToken.get();
-            newPasswordRestToken.setToken(resetToken);
-            newPasswordRestToken.setExpiryDate(Date.from(Instant.now().plus(identityProperties.getResetPassword().getTokenValidityInSecond(),
-                    ChronoUnit.SECONDS)));
-        }
-        passwordResetTokenRepository.save(newPasswordRestToken);
-        String emailLink = uiHost + identityProperties.getResetPassword().getRedirectUrl() + "?token=" + resetToken;
-        log.info("Password reset link: {}", emailLink);
-        try {
-            emailNotificationHelper.notifyUser(
-                    user,
-                    EmailTemplate.IDENTITY_PASSWORD_RESET_REQUEST,
-                    Map.of("name", user.getName(),
-                            "passwordResetLink", emailLink)
-            );
-        } catch (Exception e) {
-            log.info("Could not send the password reset link, error: {}", e.getMessage());
-        }
-        return ResponseEntity.ok().body("Reset password link sent to your email.");
+        String tenantId = tenantService.resolveTenantByEmail(userEmail)
+                .orElseThrow(() -> new AuthException("Invalid credentials"));
+
+        return TenantContext.executeInTenantContext(tenantId, () -> {
+            var user = repository.findByEmailIgnoreCaseAndStatus(userEmail, UserStatus.ACTIVE).orElseThrow(() -> new ResourceNotFoundException("Email not registered with us."));
+            String resetToken = generateResetToken();
+            Optional<PasswordResetToken> passwordResetToken = passwordResetTokenRepository.findByUser(user);
+            PasswordResetToken newPasswordRestToken;
+            if (passwordResetToken.isEmpty()) {
+                newPasswordRestToken = new PasswordResetToken();
+                newPasswordRestToken.setToken(resetToken);
+                newPasswordRestToken.setUser(user);
+                newPasswordRestToken.setExpiryDate(Date.from(Instant.now().plus(identityProperties.getResetPassword().getTokenValidityInSecond(),
+                        ChronoUnit.SECONDS)));
+            } else {
+                newPasswordRestToken = passwordResetToken.get();
+                newPasswordRestToken.setToken(resetToken);
+                newPasswordRestToken.setExpiryDate(Date.from(Instant.now().plus(identityProperties.getResetPassword().getTokenValidityInSecond(),
+                        ChronoUnit.SECONDS)));
+            }
+            passwordResetTokenRepository.save(newPasswordRestToken);
+            String emailLink = uiHost + identityProperties.getResetPassword().getRedirectUrl() + "?token=" + resetToken;
+            log.info("Password reset link: {}", emailLink);
+            try {
+                emailNotificationHelper.notifyUser(
+                        user,
+                        EmailTemplate.IDENTITY_PASSWORD_RESET_REQUEST,
+                        Map.of("name", user.getName(),
+                                "passwordResetLink", emailLink)
+                );
+            } catch (Exception e) {
+                log.info("Could not send the password reset link, error: {}", e.getMessage());
+            }
+            return ResponseEntity.ok().body("Reset password link sent to your email.");
+        });
     }
 
     @Override
-    public ResponseEntity<?> resetPassword(String token, String password) {
-        PasswordResetToken resetToken = passwordResetTokenRepository.findByToken(token)
-                .orElseThrow(() -> new AuthException("Unauthorized Request, reset token does not exist."));
-        if (resetToken.getExpiryDate().before(new Date())) {
-            throw new AuthException("Password reset token has expired.");
-        }
-        // Reset the user's password, update the user's password, and invalidate the token
-        User user = resetToken.getUser();
-        validatePasswordStrength(password);
-        if(!identityProperties.getPassword().isPasswordReUsageAllowed()) {
-            checkPasswordHistory(user, password);
-            if (user.getPasswordHistory().size() >= identityProperties.getPassword().getOldPasswordSpan()) {
-                user.getPasswordHistory().removeFirst();
+    public ResponseEntity<?> resetPassword(String userEmail, String token, String password) {
+        String tenantId = tenantService.resolveTenantByEmail(userEmail)
+                .orElseThrow(() -> new AuthException("Invalid credentials"));
+
+        return TenantContext.executeInTenantContext(tenantId, () -> {
+            PasswordResetToken resetToken = passwordResetTokenRepository.findByToken(token)
+                    .orElseThrow(() -> new AuthException("Unauthorized Request, reset token does not exist."));
+            if (resetToken.getExpiryDate().before(new Date())) {
+                throw new AuthException("Password reset token has expired.");
             }
-            try {
-                String encryptedPassword = new String(encryptionUtils.encrypt(user.getPassword()));
-                user.getPasswordHistory().add(encryptedPassword);
-            } catch (Exception e) {
-                throw new RuntimeException("Failed to update password", e);
+            // Reset the user's password, update the user's password, and invalidate the token
+            User user = resetToken.getUser();
+            if (!user.getEmail().equalsIgnoreCase(userEmail)) {
+                throw new AuthException("Invalid credentials.");
             }
-        }
-        user.setPassword(passwordEncoder.encode(password));
-        repository.save(user);
-        passwordResetTokenRepository.delete(resetToken);
-        emailNotificationHelper.notifyUser(
-                user,
-                EmailTemplate.IDENTITY_PASSWORD_RESET_SUCCESS,
-                Map.of("name", user.getName())
-        );
-        return ResponseEntity.ok("Password reset successfully.");
+            validatePasswordStrength(password);
+            if (!identityProperties.getPassword().isPasswordReUsageAllowed()) {
+                checkPasswordHistory(user, password);
+                if (user.getPasswordHistory().size() >= identityProperties.getPassword().getOldPasswordSpan()) {
+                    user.getPasswordHistory().removeFirst();
+                }
+                try {
+                    String encryptedPassword = new String(encryptionUtils.encrypt(user.getPassword()));
+                    user.getPasswordHistory().add(encryptedPassword);
+                } catch (Exception e) {
+                    throw new RuntimeException("Failed to update password", e);
+                }
+            }
+            user.setPassword(passwordEncoder.encode(password));
+            repository.save(user);
+            passwordResetTokenRepository.delete(resetToken);
+            emailNotificationHelper.notifyUser(
+                    user,
+                    EmailTemplate.IDENTITY_PASSWORD_RESET_SUCCESS,
+                    Map.of("name", user.getName())
+            );
+            return ResponseEntity.ok("Password reset successfully.");
+        });
     }
 
     private boolean checkPasswordHistory(User user, String newPassword) {

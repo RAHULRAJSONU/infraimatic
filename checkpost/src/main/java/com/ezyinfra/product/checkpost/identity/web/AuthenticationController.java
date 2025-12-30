@@ -14,7 +14,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 import java.security.Principal;
-import java.util.Objects;
 
 @RestController
 @RequestMapping("/api/v1/identity/authn")
@@ -56,7 +55,7 @@ public class AuthenticationController {
 
     @PostMapping("/reset-password/{token}")
     public ResponseEntity<?> resetPassword(@PathVariable String token, @RequestBody ResetPasswordRequest request) {
-        return ResponseEntity.ok(passwordService.resetPassword(token, request.getNewPassword()));
+        return ResponseEntity.ok(passwordService.resetPassword(request.getUserEmail(), token, request.getNewPassword()));
     }
 
     @GetMapping("/revoke")
