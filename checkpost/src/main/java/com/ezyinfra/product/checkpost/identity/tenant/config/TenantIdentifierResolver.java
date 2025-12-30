@@ -16,12 +16,10 @@ public class TenantIdentifierResolver
     @Override
     public String resolveCurrentTenantIdentifier() {
 
-        // ✅ During app startup / bootstrap
         if (!TenantContext.isBound()) {
             return SYSTEM_TENANT;
         }
 
-        // ✅ During request execution
         return TenantContext.getCurrentTenantId();
     }
 

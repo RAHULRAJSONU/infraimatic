@@ -1,5 +1,6 @@
 package com.ezyinfra.product.checkpost.identity.pipeline;
 
+import com.ezyinfra.product.checkpost.identity.service.TenantService;
 import com.ezyinfra.product.checkpost.identity.tenant.config.TenantResolverService;
 import com.ezyinfra.product.common.exception.AuthException;
 import com.ezyinfra.product.common.exception.WebhookIgnoredException;
@@ -12,12 +13,10 @@ import java.util.Optional;
 @Component
 public class TenantResolutionStep implements WebhookPipelineStep {
 
-    private final TenantResolverService tenantResolverService;
-    private final JdbcTemplate jdbcTemplate;
+    private final TenantService tenantService;
 
-    public TenantResolutionStep(TenantResolverService tenantResolverService, JdbcTemplate jdbcTemplate) {
-        this.tenantResolverService = tenantResolverService;
-        this.jdbcTemplate = jdbcTemplate;
+    public TenantResolutionStep(TenantService tenantService) {
+        this.tenantService = tenantService;
     }
 
     @Override
@@ -38,7 +37,7 @@ public class TenantResolutionStep implements WebhookPipelineStep {
             );
         }
         try {
-            String tenantId = resolveTenantByMobile(mobile)
+            String tenantId = tenantService.resolveTenantByMobile(mobile)
                     .orElseThrow(() ->
                             new AuthException(
                                     "No tenant mapped for mobile: " + mobile
@@ -52,17 +51,4 @@ public class TenantResolutionStep implements WebhookPipelineStep {
         }
     }
 
-    private Optional<String> resolveTenantByMobile(String mobile) {
-        String sql = """
-            SELECT tenant_id
-            FROM identity_user
-            WHERE phone_number = ?
-              AND status = 'ACTIVE'
-        """;
-        return jdbcTemplate.query(
-                sql,
-                ps -> ps.setString(1, mobile),
-                rs -> rs.next() ? Optional.of(rs.getString("tenant_id")) : Optional.empty()
-        );
-    }
 }

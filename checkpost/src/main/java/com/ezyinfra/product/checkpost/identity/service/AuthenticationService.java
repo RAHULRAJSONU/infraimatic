@@ -8,7 +8,7 @@ import java.io.IOException;
 
 public interface AuthenticationService {
 
-    AuthenticationResponse userRegistration(UserCreateRecord request);
+    AuthenticationResponse userRegistration(UserCreateRecord request, String tenantId);
 
     AuthenticationResponse authenticate(AuthenticationRequest request);
 

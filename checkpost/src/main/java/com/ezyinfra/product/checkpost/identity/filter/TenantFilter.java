@@ -1,5 +1,6 @@
 package com.ezyinfra.product.checkpost.identity.filter;
 
+import com.ezyinfra.product.checkpost.identity.config.TenantExcludedPathMatcher;
 import com.ezyinfra.product.checkpost.identity.tenant.config.TenantContext;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -15,10 +16,15 @@ import java.io.IOException;
 @Component
 public class TenantFilter extends OncePerRequestFilter {
 
+    private final TenantExcludedPathMatcher excludedMatcher;
+
+    public TenantFilter(TenantExcludedPathMatcher excludedMatcher) {
+        this.excludedMatcher = excludedMatcher;
+    }
+
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
-        // Webhooks are handled by WebhookPipeline
-        return request.getRequestURI().startsWith("/webhooks/");
+        return request.getRequestURI().startsWith("/webhooks/") || excludedMatcher.isExcluded(request);
     }
 
     @Override

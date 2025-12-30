@@ -4,6 +4,7 @@ import com.ezyinfra.product.checkpost.identity.data.model.*;
 import com.ezyinfra.product.checkpost.identity.data.record.UserCreateRecord;
 import com.ezyinfra.product.checkpost.identity.service.AuthenticationService;
 import com.ezyinfra.product.checkpost.identity.service.PasswordService;
+import com.ezyinfra.product.common.utility.AppConstant;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 import java.security.Principal;
+import java.util.Objects;
 
 @RestController
 @RequestMapping("/api/v1/identity/authn")
@@ -24,8 +26,9 @@ public class AuthenticationController {
     private final PasswordService passwordService;
 
     @PostMapping(value = "/register", consumes = {"application/json"})
-    public ResponseEntity<AuthenticationResponse> userRegister(@Valid @RequestBody UserCreateRecord request) {
-        return ResponseEntity.ok(service.userRegistration(request));
+    public ResponseEntity<AuthenticationResponse> userRegister(@Valid @RequestBody UserCreateRecord request,
+                                                               @RequestHeader(AppConstant.TENANT_HEADER) String tenantId) {
+        return ResponseEntity.ok(service.userRegistration(request, tenantId));
     }
 
     @PostMapping("/authenticate")

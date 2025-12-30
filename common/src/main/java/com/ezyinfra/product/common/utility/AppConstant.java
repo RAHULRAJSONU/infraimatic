@@ -17,6 +17,7 @@ public class AppConstant {
     public static final String REQUIRED_PASSWORD_FORMAT = "Invalid password, password should contain at least one lowercase, one uppercase, one digit and one special character. Length should be 8-30 characters.";
     public static final String EMAIL_REGEX = "^[a-zA-Z0-9_+&*-]+(?:\\.[a-zA-Z0-9_+&*-]+)*@(?:[a-zA-Z0-9-]+\\.)+[a-zA-Z]{2,7}$";
     public static final String UUID_SQL_PREFIX = "UUID:";
+    public static final String TENANT_HEADER = "X-Tenant-Id";
 
     public static final List<String> authExcludedPath = List.of(
             "/api/v1/tenant/register",
@@ -61,6 +62,7 @@ public class AppConstant {
     }
 
     public static class Jwt {
+        public static final String TENANT_ID = "tenant";
         public static final String TOKEN_SCOPE = "scope";
         public static final String TOKEN_TYPE = "token-type";
         public static final String REFRESH_TOKEN = "refresh_token";

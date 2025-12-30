@@ -10,6 +10,7 @@ import com.ezyinfra.product.checkpost.identity.data.record.UserCreateRecord;
 import com.ezyinfra.product.checkpost.identity.data.repository.TokenRepository;
 import com.ezyinfra.product.checkpost.identity.data.repository.UserRepository;
 import com.ezyinfra.product.checkpost.identity.service.*;
+import com.ezyinfra.product.checkpost.identity.tenant.config.TenantContext;
 import com.ezyinfra.product.common.enums.TokenType;
 import com.ezyinfra.product.common.enums.UserStatus;
 import com.ezyinfra.product.common.exception.AuthException;
@@ -44,8 +45,9 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     private final ModelMapper mapper;
     private final PasswordService passwordService;
     private final UserEmailNotificationHelper emailNotificationHelper;
+    private final TenantService tenantService;
 
-    public AuthenticationServiceImpl(UserRepository userRepository, TokenRepository tokenRepository, PasswordEncoder passwordEncoder, JwtService jwtService, AuthenticationManager authenticationManager, RoleService roleService, UserGroupService userGroupService, ModelMapper mapper, PasswordService passwordService, UserEmailNotificationHelper emailNotificationHelper) {
+    public AuthenticationServiceImpl(UserRepository userRepository, TokenRepository tokenRepository, PasswordEncoder passwordEncoder, JwtService jwtService, AuthenticationManager authenticationManager, RoleService roleService, UserGroupService userGroupService, ModelMapper mapper, PasswordService passwordService, UserEmailNotificationHelper emailNotificationHelper, TenantService tenantService) {
         this.userRepository = userRepository;
         this.tokenRepository = tokenRepository;
         this.passwordEncoder = passwordEncoder;
@@ -56,23 +58,26 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         this.mapper = mapper;
         this.passwordService = passwordService;
         this.emailNotificationHelper = emailNotificationHelper;
+        this.tenantService = tenantService;
     }
 
 
     @Override
     @Transactional
-    public AuthenticationResponse userRegistration(UserCreateRecord request) {
+    public AuthenticationResponse userRegistration(UserCreateRecord request, String tenantId) {
+        log.info("Registering new user: {}, for tenant: {}",request.email(),tenantId);
+        return TenantContext.executeInTenantContext(tenantId, () -> {
+            var userByEmail = userRepository.findByEmailIgnoreCaseAndStatus(request.email(), UserStatus.ACTIVE);
+            var userByMobile = userRepository.findByPhoneNumberAndStatus(request.phoneNumber(), UserStatus.ACTIVE);
 
-        var userByEmail = userRepository.findByEmailIgnoreCaseAndStatus(request.email(), UserStatus.ACTIVE);
-        var userByMobile = userRepository.findByPhoneNumberAndStatus(request.phoneNumber(), UserStatus.ACTIVE);
-
-        if (userByEmail.isPresent()) {
-            throw new AuthException("This email is already exits.");
-        } else if (userByMobile.isPresent()) {
-            throw new AuthException("This mobile is already exits.");
-        } else {
-            return registerUser(request);
-        }
+            if (userByEmail.isPresent()) {
+                throw new AuthException("This email is already exits.");
+            } else if (userByMobile.isPresent()) {
+                throw new AuthException("This mobile is already exits.");
+            } else {
+                return registerUser(request);
+            }
+        });
     }
 
     private AuthenticationResponse registerUser(UserCreateRecord request) {
@@ -99,51 +104,58 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     @Override
     public AuthenticationResponse authenticate(AuthenticationRequest request) {
 
-        authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                        request.getEmail(),
-                        request.getPassword()
-                )
-        );
-        var user = userRepository.findByEmailIgnoreCaseAndStatus(request.getEmail(), UserStatus.ACTIVE).orElseThrow();
-        if (!user.isEnabled())
-            throw new AuthException("Your account is currently inactive. Please get in touch with us at identity@intzdata.com for further assistance.");
-        List<Token> allValidTokenByUser = tokenRepository.findValidTokenByUser(user);
-        var jwtToken = "";
-        if (allValidTokenByUser.isEmpty()) {
-            Map<String, Object> userAuth = computeExtraClaims(user);
-            jwtToken = jwtService.generateToken(userAuth, user);
-            var refreshToken = jwtService.generateRefreshToken(Map.of(AppConstant.Jwt.TOKEN_TYPE, AppConstant.Jwt.REFRESH_TOKEN), user);
-            saveUserToken(user, jwtToken, refreshToken);
-            return AuthenticationResponse.builder()
-                    .accessToken(jwtToken)
-                    .refreshToken(refreshToken)
-                    .build();
-        } else {
-            jwtToken = allValidTokenByUser.get(0).getToken();
-            String refreshToken = allValidTokenByUser.get(0).getRefreshToken();
-            boolean tokenValid = false;
-            try {
-                tokenValid = jwtService.isTokenValid(jwtToken, user);
-            } catch (ExpiredJwtException e) {
-                log.error("Jwt token expired: {}", e.getMessage());
-            }
-            if (!tokenValid) {
-                tokenRepository.revoke(jwtToken);
+        String tenantId = tenantService.resolveTenantByEmail(request.getEmail())
+                .orElseThrow(() -> new AuthException("Invalid credentials"));
+
+        return TenantContext.executeInTenantContext(tenantId, () -> {
+
+            authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(
+                            request.getEmail(),
+                            request.getPassword()
+                    )
+            );
+            var user = userRepository.findByEmailIgnoreCaseAndStatus(request.getEmail(), UserStatus.ACTIVE).orElseThrow();
+            if (!user.isEnabled())
+                throw new AuthException("Your account is currently inactive. Please get in touch with us at identity@intzdata.com for further assistance.");
+            List<Token> allValidTokenByUser = tokenRepository.findValidTokenByUser(user);
+            var jwtToken = "";
+            if (allValidTokenByUser.isEmpty()) {
                 Map<String, Object> userAuth = computeExtraClaims(user);
                 jwtToken = jwtService.generateToken(userAuth, user);
-                refreshToken = jwtService.generateRefreshToken(Map.of(AppConstant.Jwt.TOKEN_TYPE, AppConstant.Jwt.REFRESH_TOKEN), user);
+                var refreshToken = jwtService.generateRefreshToken(Map.of(AppConstant.Jwt.TOKEN_TYPE, AppConstant.Jwt.REFRESH_TOKEN), user);
                 saveUserToken(user, jwtToken, refreshToken);
+                return AuthenticationResponse.builder()
+                        .accessToken(jwtToken)
+                        .refreshToken(refreshToken)
+                        .build();
+            } else {
+                jwtToken = allValidTokenByUser.get(0).getToken();
+                String refreshToken = allValidTokenByUser.get(0).getRefreshToken();
+                boolean tokenValid = false;
+                try {
+                    tokenValid = jwtService.isTokenValid(jwtToken, user);
+                } catch (ExpiredJwtException e) {
+                    log.error("Jwt token expired: {}", e.getMessage());
+                }
+                if (!tokenValid) {
+                    tokenRepository.revoke(jwtToken);
+                    Map<String, Object> userAuth = computeExtraClaims(user);
+                    jwtToken = jwtService.generateToken(userAuth, user);
+                    refreshToken = jwtService.generateRefreshToken(Map.of(AppConstant.Jwt.TOKEN_TYPE, AppConstant.Jwt.REFRESH_TOKEN), user);
+                    saveUserToken(user, jwtToken, refreshToken);
+                }
+                return AuthenticationResponse.builder()
+                        .accessToken(jwtToken)
+                        .refreshToken(refreshToken)
+                        .build();
             }
-            return AuthenticationResponse.builder()
-                    .accessToken(jwtToken)
-                    .refreshToken(refreshToken)
-                    .build();
-        }
+        });
     }
 
     private Map<String, Object> computeExtraClaims(User user) {
         return Map.of(
+                AppConstant.Jwt.TENANT_ID, TenantContext.getCurrentTenantId(),
                 AppConstant.Jwt.PRINCIPAL, user.getEmail(),
                 AppConstant.Jwt.AUDIENCE, "",
                 "name", user.getName(),
@@ -189,52 +201,75 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     @Override
     public AuthenticationResponse refreshToken(String authHeader) throws IOException {
         final String refreshToken;
-        final String userEmail;
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             throw new AuthException("Unauthorized access.");
         }
         refreshToken = authHeader.substring(7);
-        AuthenticationResponse authResponse = null;
+
         String tokenType = jwtService.extractClaim(refreshToken, c -> (String) c.get(AppConstant.Jwt.TOKEN_TYPE));
         if (tokenType == null || !tokenType.equals(AppConstant.Jwt.REFRESH_TOKEN)) {
             throw new AuthException("Invalid refresh token");
         }
-        userEmail = jwtService.extractUsername(refreshToken);
-        if (userEmail != null) {
-            var user = this.userRepository.findByEmailIgnoreCaseAndStatus(userEmail, UserStatus.ACTIVE)
-                    .orElseThrow(() -> new AuthException("Invalid user details."));
-            if (jwtService.isTokenValid(refreshToken, user)) {
-                var accessToken = jwtService.generateToken(computeExtraClaims(user), user);
-                updateUserToken(accessToken, refreshToken);
-                authResponse = AuthenticationResponse.builder()
-                        .accessToken(accessToken)
-                        .refreshToken(refreshToken)
-                        .build();
-            } else {
-                throw new AuthException("Invalid refresh token.");
-            }
-        } else {
-            throw new AuthException("Invalid auth token.");
+
+        String tenantId = jwtService.extractClaim(
+                refreshToken,
+                c -> (String) c.get("tenant")
+        );
+
+        if (tenantId == null) {
+            throw new AuthException("Tenant missing in refresh token");
         }
-        return authResponse;
+        return TenantContext.executeInTenantContext(tenantId, () -> {
+            final String userEmail;
+            AuthenticationResponse authResponse = null;
+            userEmail = jwtService.extractUsername(refreshToken);
+
+            if (userEmail != null) {
+                var user = this.userRepository.findByEmailIgnoreCaseAndStatus(userEmail, UserStatus.ACTIVE)
+                        .orElseThrow(() -> new AuthException("Invalid user details."));
+                if (jwtService.isTokenValid(refreshToken, user)) {
+                    var accessToken = jwtService.generateToken(computeExtraClaims(user), user);
+                    updateUserToken(accessToken, refreshToken);
+                    authResponse = AuthenticationResponse.builder()
+                            .accessToken(accessToken)
+                            .refreshToken(refreshToken)
+                            .build();
+                } else {
+                    throw new AuthException("Invalid refresh token.");
+                }
+            } else {
+                throw new AuthException("Invalid auth token.");
+            }
+            return authResponse;
+        });
     }
 
     @Override
     public void revoke(String authorization, boolean fromAllDevices) {
         log.info("logging out, fromAllDevices: {}", fromAllDevices);
         final String token;
-        final String userEmail;
         if (authorization == null || !authorization.startsWith("Bearer ")) {
             throw new AuthException("Unauthorized request, access denied.");
         }
         token = authorization.substring(7);
-        userEmail = jwtService.extractUsername(token);
-        var user = userRepository.findByEmailIgnoreCaseAndStatus(userEmail, UserStatus.ACTIVE).orElseThrow(
-                () -> new AuthException("Unauthorized request, access denied."));
-        if (fromAllDevices) {
-            tokenRepository.revokeAll(user);
-        } else {
-            tokenRepository.revoke(token);
+
+        String tenantId = jwtService.extractClaim(
+                token,
+                c -> (String) c.get("tenant")
+        );
+
+        if (tenantId == null) {
+            throw new AuthException("Tenant missing in refresh token");
         }
+        TenantContext.executeInTenantContext(tenantId, () -> {
+            final String userEmail = jwtService.extractUsername(token);
+            var user = userRepository.findByEmailIgnoreCaseAndStatus(userEmail, UserStatus.ACTIVE).orElseThrow(
+                    () -> new AuthException("Unauthorized request, access denied."));
+            if (fromAllDevices) {
+                tokenRepository.revokeAll(user);
+            } else {
+                tokenRepository.revoke(token);
+            }
+        });
     }
 }
