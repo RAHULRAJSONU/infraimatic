@@ -1,13 +1,10 @@
 package com.ezyinfra.product.checkpost.identity.pipeline;
 
 import com.ezyinfra.product.checkpost.identity.service.TenantService;
-import com.ezyinfra.product.checkpost.identity.tenant.config.TenantResolverService;
 import com.ezyinfra.product.common.exception.AuthException;
 import com.ezyinfra.product.common.exception.WebhookIgnoredException;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
-import java.util.Optional;
 
 @Slf4j
 @Component

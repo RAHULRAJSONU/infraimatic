@@ -2,6 +2,7 @@
 //
 //import com.ezyinfra.product.checkpost.identity.data.repository.TokenRepository;
 //import com.ezyinfra.product.checkpost.identity.service.JwtService;
+//import com.ezyinfra.product.checkpost.identity.service.TenantService;
 //import com.ezyinfra.product.checkpost.identity.tenant.config.JwtTenantResolver;
 //import com.ezyinfra.product.checkpost.identity.tenant.config.TenantContext;
 //import com.ezyinfra.product.common.exception.ApiErrorResponse;
@@ -35,7 +36,7 @@
 //@Slf4j
 //@Component
 //@RequiredArgsConstructor
-//@Order(Ordered.HIGHEST_PRECEDENCE)
+//@Order(Ordered.HIGHEST_PRECEDENCE+1)
 //public class AuthOperationFilter extends OncePerRequestFilter {
 //
 //    private static final ObjectMapper objectMapper = new ObjectMapper();
@@ -43,20 +44,18 @@
 //    private final JwtService jwtService;
 //    private final UserDetailsService userDetailsService;
 //    private final TokenRepository tokenRepository;
-//    private final JwtTenantResolver tenantResolver;
+//    private final TenantService tenantResolver;
 //
-//    private static final List<String> EXCLUDED = List.of(
-//            "/api/v1/tenant/register",
-//            "/api/v1/identity/authn/register"
+//    private static final List<String> SPECIALLY_EXCLUDED = List.of(
+//            "/api/v1/identity/authn/authenticate"
 //    );
 //
 //    private final AntPathMatcher pathMatcher = new AntPathMatcher();
 //
 //    @Override
 //    protected boolean shouldNotFilter(HttpServletRequest request) {
-//        if ("OPTIONS".equalsIgnoreCase(request.getMethod())) return true;
 //        final String path = request.getServletPath();
-//        return EXCLUDED.stream().noneMatch(p -> pathMatcher.match(p, path));
+//        return SPECIALLY_EXCLUDED.stream().noneMatch(p -> pathMatcher.match(p, path));
 //    }
 //
 //    @Override
@@ -65,23 +64,7 @@
 //                                    FilterChain filterChain)
 //            throws ServletException, IOException {
 //        try {
-//            // If already authenticated (e.g., downstream filter set it), continue
-//            if (SecurityContextHolder.getContext().getAuthentication() != null) {
-//                filterChain.doFilter(request, response);
-//                return;
-//            }
-//
-//            // Parse bearer token
-//            final String authHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
-//            final String jwt = extractBearerToken(authHeader);
-//
-//            // If no Bearer, treat as anonymous and continue
-//            if (jwt == null) {
-//                filterChain.doFilter(request, response);
-//                return;
-//            }
-//
-//            final String tenantId = tenantResolver.resolveTenant(jwt)
+//            final String tenantId = tenantResolver.resolveTenantByEmail(jwt)
 //                    .orElseThrow(() -> new AuthException("Tenant missing in token"));
 //
 //            // 🔐 Execute authentication WITH tenant bound

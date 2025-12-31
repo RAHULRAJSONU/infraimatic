@@ -47,10 +47,11 @@ public class PromptBuilder {
     ) {
         StringBuilder sb = new StringBuilder();
 
-        sb.append("You are a strict JSON patch generator.\n");
+        sb.append("You are a strict JSON extractor.\n");
         sb.append("Your task is to extract ONLY the information explicitly present in the USER MESSAGE.\n");
         sb.append("Do NOT repeat fields already present unless updating them.\n");
         sb.append("Do NOT hallucinate values.\n");
+        sb.append("Do NOT include ```json ``` or any markdown.\n");
         sb.append("Return JSON ONLY.\n\n");
 
         sb.append("RULES:\n");

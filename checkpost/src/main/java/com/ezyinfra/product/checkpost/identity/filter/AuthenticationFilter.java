@@ -3,7 +3,7 @@ package com.ezyinfra.product.checkpost.identity.filter;
 import com.ezyinfra.product.checkpost.identity.data.repository.TokenRepository;
 import com.ezyinfra.product.checkpost.identity.service.JwtService;
 import com.ezyinfra.product.checkpost.identity.tenant.config.JwtTenantResolver;
-import com.ezyinfra.product.checkpost.identity.tenant.config.TenantContext;
+import com.ezyinfra.product.checkpost.identity.tenant.config.TenantScope;
 import com.ezyinfra.product.common.exception.ApiErrorResponse;
 import com.ezyinfra.product.common.exception.AuthException;
 import com.ezyinfra.product.common.utility.AppConstant;
@@ -14,7 +14,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.BeanFactory;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpHeaders;
@@ -30,7 +29,6 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.List;
 import java.util.Objects;
 
 @Slf4j
@@ -81,7 +79,7 @@ public class AuthenticationFilter extends OncePerRequestFilter {
                     .orElseThrow(() -> new AuthException("Tenant missing in token"));
 
             // 🔐 Execute authentication WITH tenant bound
-            TenantContext.executeInTenantContext(tenantId, () -> {
+            TenantScope.run(tenantId, () -> {
                 try {
                     authenticateAndContinue(jwt, request, response, filterChain);
                 } catch (Exception e) {

@@ -1,24 +1,23 @@
 package com.ezyinfra.product.checkpost.identity.config;
 
-import java.util.concurrent.Executor;
-
+import com.ezyinfra.product.checkpost.identity.tenant.config.TenantAwareTaskDecorator;
 import org.springframework.aop.interceptor.AsyncUncaughtExceptionHandler;
 import org.springframework.aop.interceptor.SimpleAsyncUncaughtExceptionHandler;
-import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Role;
 import org.springframework.scheduling.annotation.AsyncConfigurer;
-import org.springframework.scheduling.annotation.AsyncConfigurerSupport;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
+import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
 @Configuration
 @EnableAsync
-@Role(BeanDefinition.ROLE_INFRASTRUCTURE)
 public class AsyncConfig implements AsyncConfigurer {
 
-    @Bean("TenantAwareTaskExecutor")
+    @Bean
     @Override
     public Executor getAsyncExecutor() {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
@@ -37,6 +36,13 @@ public class AsyncConfig implements AsyncConfigurer {
     @Override
     public AsyncUncaughtExceptionHandler getAsyncUncaughtExceptionHandler() {
         return new SimpleAsyncUncaughtExceptionHandler();
+    }
+
+    @Bean
+    public ExecutorService tenantAwareVirtualExecutor() {
+        return Executors.newThreadPerTaskExecutor(
+                Thread.ofVirtual().factory()
+        );
     }
 
 }

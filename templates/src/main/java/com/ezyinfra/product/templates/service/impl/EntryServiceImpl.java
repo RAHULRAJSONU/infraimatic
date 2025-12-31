@@ -3,7 +3,6 @@ package com.ezyinfra.product.templates.service.impl;
 import com.ezyinfra.product.common.dto.EntryDto;
 import com.ezyinfra.product.common.enums.EntryStatus;
 import com.ezyinfra.product.common.exception.NotFoundException;
-import com.ezyinfra.product.common.exception.ValidationException;
 import com.ezyinfra.product.infra.entity.RecordEntity;
 import com.ezyinfra.product.infra.entity.TemplateDefinitionEntity;
 import com.ezyinfra.product.infra.repository.RecordRepository;
@@ -14,7 +13,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.networknt.schema.JsonSchema;
 import com.networknt.schema.JsonSchemaFactory;
 import com.networknt.schema.SpecVersion;
-import com.networknt.schema.ValidationMessage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -22,7 +20,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.*;
+import java.util.List;
+import java.util.Objects;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Slf4j

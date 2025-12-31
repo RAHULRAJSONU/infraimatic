@@ -1,7 +1,7 @@
 package com.ezyinfra.product.checkpost.identity.filter;
 
 import com.ezyinfra.product.checkpost.identity.config.TenantExcludedPathMatcher;
-import com.ezyinfra.product.checkpost.identity.tenant.config.TenantContext;
+import com.ezyinfra.product.checkpost.identity.tenant.config.TenantScope;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -24,7 +24,8 @@ public class TenantFilter extends OncePerRequestFilter {
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
-        return request.getRequestURI().startsWith("/webhooks/") || excludedMatcher.isExcluded(request);
+        return (request.getRequestURI().startsWith("/webhooks/") || excludedMatcher.isExcluded(request)) &&
+                request.getHeader("X-Tenant-Id") == null;
     }
 
     @Override
@@ -44,7 +45,7 @@ public class TenantFilter extends OncePerRequestFilter {
 
         log.info("Binding tenant [{}] using ScopedValue", tenantId);
 
-        TenantContext.executeInTenantContext(
+        TenantScope.run(
                 tenantId,
                 () -> {
                     try {

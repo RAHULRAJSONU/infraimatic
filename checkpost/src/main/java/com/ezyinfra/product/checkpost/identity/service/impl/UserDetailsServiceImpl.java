@@ -3,12 +3,15 @@ package com.ezyinfra.product.checkpost.identity.service.impl;
 import com.ezyinfra.product.checkpost.identity.data.entity.User;
 import com.ezyinfra.product.checkpost.identity.data.repository.PrivilegeRepository;
 import com.ezyinfra.product.checkpost.identity.data.repository.UserRepository;
+import com.ezyinfra.product.checkpost.identity.tenant.config.TenantContext;
 import com.ezyinfra.product.common.enums.UserStatus;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class UserDetailsServiceImpl implements UserDetailsService {
@@ -19,7 +22,10 @@ public class UserDetailsServiceImpl implements UserDetailsService {
 
     @Override
     public User loadUserByUsername(String username) throws UsernameNotFoundException {
-        return userRepository.findByStatus(username, UserStatus.ACTIVE)
+        if (!TenantContext.isBound()) {
+            throw new IllegalStateException("Tenant not bound before authentication");
+        }
+        return userRepository.findByEmailOrUsernameAndStatus(username, UserStatus.ACTIVE)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found: " + username));
     }
 }

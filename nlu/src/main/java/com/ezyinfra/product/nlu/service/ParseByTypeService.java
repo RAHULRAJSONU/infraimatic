@@ -6,6 +6,8 @@ import com.ezyinfra.product.infra.repository.TemplateDefinitionRepository;
 import com.ezyinfra.product.nlu.dto.ParseByTypeRequest;
 import com.ezyinfra.product.nlu.dto.ParseByTypeResponse;
 import com.ezyinfra.product.templates.service.EntryService;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
@@ -121,10 +123,51 @@ public class ParseByTypeService {
         return new ParseByTypeResponse(parsed, conf, finalErrors, raw, List.of());
     }
 
-    private JsonNode extractJson(String raw) throws Exception {
-        int s = raw.indexOf('{'), e = raw.lastIndexOf('}');
-        if (s < 0 || e < 0 || e <= s) throw new IllegalArgumentException("No JSON found in model output");
-        return mapper.readTree(raw.substring(s, e+1));
+    private JsonNode extractJson(String raw) {
+        if (raw == null || raw.isBlank()) {
+            throw new IllegalArgumentException("Empty model output");
+        }
+
+        String cleaned = raw.trim();
+
+        // 1️⃣ Strip Markdown ```json / ``` fences if present
+        if (cleaned.startsWith("```")) {
+            cleaned = cleaned
+                    .replaceFirst("^```json\\s*", "")
+                    .replaceFirst("^```\\s*", "")
+                    .replaceFirst("\\s*```$", "")
+                    .trim();
+        }
+
+        // 2️⃣ Try strict JSON parse (fast path)
+        try {
+            JsonNode node = mapper.readTree(cleaned);
+            if (!node.isObject()) {
+                throw new IllegalArgumentException("Root JSON must be an object");
+            }
+            return node;
+        } catch (Exception ignored) {
+            // fallback below
+        }
+
+        // 3️⃣ Streaming fallback: find first valid JSON object safely
+        try (JsonParser parser = mapper.getFactory().createParser(cleaned)) {
+            while (parser.nextToken() != null) {
+                if (parser.currentToken() == JsonToken.START_OBJECT) {
+                    JsonNode node = mapper.readTree(parser);
+                    if (node != null && node.isObject()) {
+                        return node;
+                    }
+                }
+            }
+        } catch (Exception e) {
+            throw new IllegalStateException(
+                    "Failed to extract valid JSON object from model output",
+                    e
+            );
+        }
+
+        throw new IllegalArgumentException("No valid JSON object found in model output");
     }
 
     private Map<String,Double> extractConfidence(JsonNode node) {

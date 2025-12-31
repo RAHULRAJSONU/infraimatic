@@ -11,17 +11,14 @@ import java.util.Map;
 public class TenantIdentifierResolver
         implements CurrentTenantIdentifierResolver<String>, HibernatePropertiesCustomizer {
 
-    private static final String SYSTEM_TENANT = "SYSTEM";
+    private static final String DEFAULT = "SYSTEM";
 
     @Override
     public String resolveCurrentTenantIdentifier() {
-
-        if (!TenantContext.isBound()) {
-            return SYSTEM_TENANT;
-        }
-
-        return TenantContext.getCurrentTenantId();
+        String tenant = TenantContext.get();
+        return (tenant == null || tenant.isBlank()) ? DEFAULT : tenant;
     }
+
 
     @Override
     public boolean validateExistingCurrentSessions() {

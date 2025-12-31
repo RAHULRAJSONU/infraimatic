@@ -8,6 +8,7 @@ import com.ezyinfra.product.common.utility.AppConstant;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 import java.io.IOException;
 import java.security.Principal;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/v1/identity/authn")
 @RequiredArgsConstructor
@@ -32,8 +34,10 @@ public class AuthenticationController {
 
     @PostMapping("/authenticate")
     public ResponseEntity<AuthenticationResponse> authenticate(
-            @RequestBody AuthenticationRequest request
+            @RequestBody AuthenticationRequest request,
+            @RequestHeader(AppConstant.TENANT_HEADER) String tenantId
     ) {
+        log.info("Authentication request, principal: {}, tenantId: {}", request.getEmail(), tenantId);
         return ResponseEntity.ok(service.authenticate(request));
     }
 

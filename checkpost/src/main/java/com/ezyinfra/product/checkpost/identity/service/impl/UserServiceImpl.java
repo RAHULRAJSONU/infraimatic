@@ -104,7 +104,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public Optional<String> findTenantIdByMobile(String phoneNumber) {
-        log.info("Finding tenant for tenantId: {}, and phoneNumber: {}", TenantContext.getCurrentTenantId(),phoneNumber);
+        log.info("Finding tenant for tenantId: {}, and phoneNumber: {}", TenantContext.get(),phoneNumber);
         Objects.requireNonNull(phoneNumber, "Invalid mobile number: " + phoneNumber);
         Optional<User> user = findByPhoneNumberAndStatus(phoneNumber, UserStatus.ACTIVE);
         if(user.isPresent()){

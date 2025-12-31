@@ -30,9 +30,11 @@ spring:
     properties:
       hibernate:
 #        dialect: org.hibernate.dialect.PostgreSQLDialect
+        show_sql: false
         format_sql: true
         jdbc.time_zone: UTC
         multiTenancy: DISCRIMINATOR
+        use_sql_comments: true
   flyway:
     enabled: false
     locations: classpath:db/migration
@@ -137,6 +139,8 @@ identity:
 #Logging Conf
 logging:
   level:
+    org.hibernate.SQL: DEBUG
+    org.hibernate.orm.jdbc.bind: TRACE
     org.springframework.boot: error
     org.springframework.security: debug
     org.springframework.security.web: debug

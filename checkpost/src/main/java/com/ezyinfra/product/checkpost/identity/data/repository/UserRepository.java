@@ -23,10 +23,13 @@ public interface UserRepository extends JpaRepository<User, UUID> {
     @Query("""
        SELECT u
        FROM User u
-       WHERE (u.email = :user OR u.username = :user)
-         AND u.status = :status
+       WHERE (lower(u.email) = lower(:user)
+           OR lower(u.username) = lower(:user))
        """)
-    Optional<User> findByStatus(@Param("user") String user, @Param("status") UserStatus status);
+    Optional<User> findByEmailOrUsernameAndStatus(
+            @Param("user") String user,
+            @Param("status") UserStatus status
+    );
 
     Optional<User> findByPhoneNumberAndStatus(String phoneNumber, UserStatus status);
 

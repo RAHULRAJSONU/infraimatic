@@ -11,6 +11,7 @@ import com.ezyinfra.product.checkpost.identity.data.repository.TokenRepository;
 import com.ezyinfra.product.checkpost.identity.data.repository.UserRepository;
 import com.ezyinfra.product.checkpost.identity.service.*;
 import com.ezyinfra.product.checkpost.identity.tenant.config.TenantContext;
+import com.ezyinfra.product.checkpost.identity.tenant.config.TenantScope;
 import com.ezyinfra.product.common.enums.TokenType;
 import com.ezyinfra.product.common.enums.UserStatus;
 import com.ezyinfra.product.common.exception.AuthException;
@@ -66,18 +67,16 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     @Transactional
     public AuthenticationResponse userRegistration(UserCreateRecord request, String tenantId) {
         log.info("Registering new user: {}, for tenant: {}",request.email(),tenantId);
-        return TenantContext.executeInTenantContext(tenantId, () -> {
-            var userByEmail = userRepository.findByEmailIgnoreCaseAndStatus(request.email(), UserStatus.ACTIVE);
-            var userByMobile = userRepository.findByPhoneNumberAndStatus(request.phoneNumber(), UserStatus.ACTIVE);
+        var userByEmail = userRepository.findByEmailIgnoreCaseAndStatus(request.email(), UserStatus.ACTIVE);
+        var userByMobile = userRepository.findByPhoneNumberAndStatus(request.phoneNumber(), UserStatus.ACTIVE);
 
-            if (userByEmail.isPresent()) {
-                throw new AuthException("This email is already exits.");
-            } else if (userByMobile.isPresent()) {
-                throw new AuthException("This mobile is already exits.");
-            } else {
-                return registerUser(request);
-            }
-        });
+        if (userByEmail.isPresent()) {
+            throw new AuthException("This email is already exits.");
+        } else if (userByMobile.isPresent()) {
+            throw new AuthException("This mobile is already exits.");
+        } else {
+            return registerUser(request);
+        }
     }
 
     private AuthenticationResponse registerUser(UserCreateRecord request) {
@@ -106,8 +105,8 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
         String tenantId = tenantService.resolveTenantByEmail(request.getEmail())
                 .orElseThrow(() -> new AuthException("Invalid credentials"));
-
-        return TenantContext.executeInTenantContext(tenantId, () -> {
+        TenantContext.clear();
+        return TenantScope.call(tenantId, () -> {
 
             authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(
@@ -155,7 +154,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
     private Map<String, Object> computeExtraClaims(User user) {
         return Map.of(
-                AppConstant.Jwt.TENANT_ID, TenantContext.getCurrentTenantId(),
+                AppConstant.Jwt.TENANT_ID, TenantContext.get(),
                 AppConstant.Jwt.PRINCIPAL, user.getEmail(),
                 AppConstant.Jwt.AUDIENCE, "",
                 "name", user.getName(),
@@ -219,7 +218,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         if (tenantId == null) {
             throw new AuthException("Tenant missing in refresh token");
         }
-        return TenantContext.executeInTenantContext(tenantId, () -> {
+        return TenantScope.call(tenantId, () -> {
             final String userEmail;
             AuthenticationResponse authResponse = null;
             userEmail = jwtService.extractUsername(refreshToken);
@@ -261,7 +260,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         if (tenantId == null) {
             throw new AuthException("Tenant missing in refresh token");
         }
-        TenantContext.executeInTenantContext(tenantId, () -> {
+        TenantScope.run(tenantId, () -> {
             final String userEmail = jwtService.extractUsername(token);
             var user = userRepository.findByEmailIgnoreCaseAndStatus(userEmail, UserStatus.ACTIVE).orElseThrow(
                     () -> new AuthException("Unauthorized request, access denied."));
