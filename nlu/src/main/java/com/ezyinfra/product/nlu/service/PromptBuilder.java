@@ -43,46 +43,92 @@ public class PromptBuilder {
             JsonNode fullSchema,
             String userText,
             JsonNode existingJson,
-            Set<String> targetFields
+            Set<String> targetFields,
+            Set<String> alreadyAskedFields
     ) {
         StringBuilder sb = new StringBuilder();
 
-        sb.append("You are a strict JSON extractor.\n");
-        sb.append("Your task is to extract ONLY the information explicitly present in the USER MESSAGE.\n");
-        sb.append("Do NOT repeat fields already present unless updating them.\n");
-        sb.append("Do NOT hallucinate values.\n");
-        sb.append("Do NOT include ```json ``` or any markdown.\n");
-        sb.append("Return JSON ONLY.\n\n");
+        sb.append("""
+            You are a STRICT INFORMATION EXTRACTION ENGINE.
+            You are NOT a chatbot.
+            You MUST NOT ask questions.
+            You MUST NOT explain anything.
+            
+            ====================
+            ABSOLUTE RULES
+            ====================
+            - Output VALID JSON only
+            - No markdown
+            - No explanations
+            - No inferred or guessed values
+            - Extract ONLY what is EXPLICITLY stated
+            - Do NOT repeat existing values unless user clearly updates them
+            - If information is missing or ambiguous, OMIT the field
+            - NEVER fabricate values
+            - NEVER ask follow-up questions
+            - Returning {} is VALID
+            
+            ====================
+            SCHEMA (AUTHORITATIVE)
+            ====================
+            """);
 
-        sb.append("RULES:\n");
-        sb.append("- Use ONLY property names from the SCHEMA\n");
-        sb.append("- Include only fields you can confidently extract from the message\n");
-        sb.append("- If a field is not mentioned, OMIT it\n");
-        sb.append("- Use null ONLY if the user explicitly indicates absence\n");
-        sb.append("- Include a top-level _confidence map (0..1) ONLY for returned fields\n");
-        sb.append("- Dates must be ISO-8601\n\n");
+                    sb.append(fullSchema.toPrettyString()).append("\n\n");
 
-        sb.append("SCHEMA:\n")
-                .append(fullSchema.toPrettyString())
-                .append("\n\n");
+                    sb.append("""
+            ====================
+            CURRENT_STATE_JSON
+            ====================
+            """);
 
-        sb.append("CURRENT_JSON:\n")
-                .append(existingJson == null ? "{}" : existingJson.toPrettyString())
-                .append("\n\n");
+                    sb.append(existingJson == null ? "{}" : existingJson.toPrettyString())
+                            .append("\n\n");
 
-        if (targetFields != null && !targetFields.isEmpty()) {
-            sb.append("TARGET_FIELDS (focus on these if present):\n")
-                    .append(targetFields)
-                    .append("\n\n");
-        }
+                    sb.append("""
+            ====================
+            ALREADY_ASKED_FIELDS
+            (Do NOT extract these unless explicitly answered)
+            ====================
+            """);
 
-        sb.append("USER_MESSAGE:\n\"\"\"\n")
+                    sb.append(alreadyAskedFields == null ? "[]" : alreadyAskedFields)
+                            .append("\n\n");
+
+                    if (targetFields != null && !targetFields.isEmpty()) {
+                        sb.append("""
+            ====================
+            TARGET_FIELDS
+            (Focus ONLY on these if present)
+            ====================
+            """);
+                        sb.append(targetFields).append("\n\n");
+                    }
+
+                    sb.append("""
+            ====================
+            USER_MESSAGE
+            ====================
+            """
+                    );
+
+        sb.append("\"\"\"\n")
                 .append(userText)
                 .append("\n\"\"\"\n\n");
 
-        sb.append("Return JSON PATCH only.");
+        sb.append("""
+            ====================
+            OUTPUT FORMAT
+            ====================
+            Return a JSON object containing:
+            1. Extracted fields only (partial patch)
+            2. A top-level "_confidence" object with 0.0–1.0 per returned field
+            
+            If no fields can be extracted, return {} exactly.
+            """
+        );
 
         return sb.toString();
     }
+
 
 }

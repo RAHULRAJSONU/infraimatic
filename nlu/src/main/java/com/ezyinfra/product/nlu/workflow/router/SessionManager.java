@@ -1,4 +1,4 @@
-package com.ezyinfra.product.nlu.router;
+package com.ezyinfra.product.nlu.workflow.router;
 
 import com.ezyinfra.product.common.exception.AuthException;
 import org.springframework.stereotype.Component;
@@ -14,7 +14,7 @@ public class SessionManager {
     public UserSession getOrCreate(String phone) {
         try{
             return sessions.computeIfAbsent(phone,
-                    p -> new UserSession(p));
+                    UserSession::new);
         }catch (Exception ex){
             throw new AuthException("Could not create the userSession, exception: "+ex.getMessage());
         }

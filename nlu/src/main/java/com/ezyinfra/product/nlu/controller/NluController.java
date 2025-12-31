@@ -1,5 +1,6 @@
 package com.ezyinfra.product.nlu.controller;
 
+import com.ezyinfra.product.nlu.dto.ExtractRequest;
 import com.ezyinfra.product.nlu.dto.ParseByTypeRequest;
 import com.ezyinfra.product.nlu.dto.ParseByTypeResponse;
 import com.ezyinfra.product.nlu.service.EnrichmentService;
@@ -27,14 +28,23 @@ public class NluController {
 
     private final ParseByTypeService typeParser;
 
-    @PostMapping(value = "/entry/{tenantId}/{type}")
+    @PostMapping(value = "/entry/{type}")
     @Operation(summary = "Parse natural language into structured payload")
-    public ResponseEntity<ParseByTypeResponse> parse(@PathVariable("tenantId") String tenantId,
+    public ResponseEntity<?> parse(@PathVariable("tenantId") String tenantId,
                                                   @PathVariable("type") String type,
                                                   @RequestBody ParseByTypeRequest req) {
         try {
-            ParseByTypeResponse response = typeParser.handle(tenantId, req);
-            return ResponseEntity.ok(response);
+//            ParseByTypeResponse response = typeParser.extractPartialPatch(
+//                    ExtractRequest.builder()
+//                            .type(type)
+//                            .userText(req.getText())
+//                            .existingJson(session.getCollectedData())
+//                            .fullSchema(templateService.getLatestTemplate(TYPE).jsonSchema())
+//                            .targetFields(session.getPendingFields())
+//                            .alreadyAskedFields(session.getAskedFields())
+//                            .build()
+//            );
+            return ResponseEntity.ok("Service Not Enabled.");
         } catch (IllegalArgumentException ex) {
             return ResponseEntity.badRequest().body(new ParseByTypeResponse(null, Map.of(), List.of(ex.getMessage()), "", List.of()));
         } catch (Exception e) {

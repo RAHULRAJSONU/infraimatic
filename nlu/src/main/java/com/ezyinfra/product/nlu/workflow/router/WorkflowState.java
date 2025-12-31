@@ -1,4 +1,4 @@
-package com.ezyinfra.product.nlu.router;
+package com.ezyinfra.product.nlu.workflow.router;
 
 public enum WorkflowState {
     IN_PROGRESS,

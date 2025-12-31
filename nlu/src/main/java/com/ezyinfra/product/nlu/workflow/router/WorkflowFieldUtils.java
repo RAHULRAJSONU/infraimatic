@@ -1,4 +1,4 @@
-package com.ezyinfra.product.nlu.router;
+package com.ezyinfra.product.nlu.workflow.router;
 
 import com.fasterxml.jackson.databind.JsonNode;
 

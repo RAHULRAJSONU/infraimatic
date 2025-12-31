@@ -46,7 +46,6 @@ spring:
     mode: HTML
     encoding: UTF-8
     cache: false
-
   ai:
     chat:
       memory:
@@ -70,8 +69,14 @@ spring:
       chat:
         options:
           model: llama-3.3-70b-versatile
-          # model: openai/gpt-oss-20b
+#          model: openai/gpt-oss-20b
+#          model: llama-3.1-8b-instant
           temperature: 0.0
+whisper:
+  provider: openai
+  api:
+    base-url: https://api.openai.com/v1
+    api-key: ${GROQ_API_KEY}
 
 management:
   endpoints:

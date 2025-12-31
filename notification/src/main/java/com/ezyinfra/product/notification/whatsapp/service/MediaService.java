@@ -4,6 +4,7 @@ import com.ezyinfra.product.storage.model.StorageResult;
 import com.ezyinfra.product.storage.service.StorageService;
 import com.ezyinfra.product.storage.util.FluxToInputStream;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.ClientResponse;
@@ -36,7 +37,7 @@ public class MediaService {
     public MediaService(WebClient.Builder webClientBuilder,
                         StorageService storageService,
                         // queue capacity for FluxToInputStream; tune to your workload
-                        @org.springframework.beans.factory.annotation.Value("${media.queue-capacity:32}") int queueCapacity) {
+                        @Value("${media.queue-capacity:32}") int queueCapacity) {
         this.webClient = webClientBuilder.build();
         this.storageService = storageService;
         this.queueCapacity = Math.max(4, queueCapacity);
