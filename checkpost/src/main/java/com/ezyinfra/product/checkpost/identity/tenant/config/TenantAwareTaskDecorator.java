@@ -10,7 +10,7 @@ public class TenantAwareTaskDecorator implements TaskDecorator {
 
         return () -> {
             if (tenantId != null) {
-                TenantContext.set(tenantId);
+                TenantContext.bind(tenantId);
             }
             try {
                 runnable.run();

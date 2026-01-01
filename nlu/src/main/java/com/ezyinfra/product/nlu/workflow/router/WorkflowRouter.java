@@ -2,22 +2,32 @@ package com.ezyinfra.product.nlu.workflow.router;
 
 import com.ezyinfra.product.nlu.workflow.gatepass.GatepassWorkflow;
 import org.springframework.stereotype.Component;
+
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 @Component
 public class WorkflowRouter {
 
     private final GatepassWorkflow gatepassWorkflow;
+    private final Set<String> resetAlias;
 
     public WorkflowRouter(
             GatepassWorkflow gatepassWorkflow
     ) {
         this.gatepassWorkflow = gatepassWorkflow;
+        this.resetAlias = Set.of("RESET","CANCEL","RESTART","EXIT","STOP","QUIT");
     }
 
     public String route(UserSession session, Map<String, String> event) {
 
         String body = event.getOrDefault("Body", "").trim();
+
+        if(resetAlias.contains(body.toUpperCase())){
+            session.reset();
+            return "Thank you, please type Hi to start the conversation again.";
+        }
 
         // 1️⃣ If NO workflow yet → try deterministic selection
         if (session.getWorkflow() == null) {

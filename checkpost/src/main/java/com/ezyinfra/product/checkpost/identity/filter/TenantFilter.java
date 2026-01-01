@@ -1,7 +1,7 @@
 package com.ezyinfra.product.checkpost.identity.filter;
 
 import com.ezyinfra.product.checkpost.identity.config.TenantExcludedPathMatcher;
-import com.ezyinfra.product.checkpost.identity.tenant.config.TenantScope;
+import com.ezyinfra.product.checkpost.identity.tenant.config.TenantContext;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -45,15 +45,13 @@ public class TenantFilter extends OncePerRequestFilter {
 
         log.info("Binding tenant [{}] using ScopedValue", tenantId);
 
-        TenantScope.run(
-                tenantId,
-                () -> {
-                    try {
-                        filterChain.doFilter(request, response);
-                    } catch (IOException | ServletException e) {
-                        throw new RuntimeException(e);
-                    }
-                }
-        );
+        TenantContext.bind(tenantId);
+        try {
+            filterChain.doFilter(request, response);
+        } catch (IOException | ServletException e) {
+            throw new RuntimeException(e);
+        }finally {
+            TenantContext.clear();
+        }
     }
 }

@@ -13,7 +13,7 @@ import com.ezyinfra.product.checkpost.identity.data.repository.PasswordResetToke
 import com.ezyinfra.product.checkpost.identity.data.repository.UserRepository;
 import com.ezyinfra.product.checkpost.identity.service.PasswordService;
 import com.ezyinfra.product.checkpost.identity.service.TenantService;
-import com.ezyinfra.product.checkpost.identity.tenant.config.TenantScope;
+import com.ezyinfra.product.checkpost.identity.tenant.config.TenantContext;
 import com.ezyinfra.product.common.enums.UserStatus;
 import com.ezyinfra.product.common.exception.AuthException;
 import com.ezyinfra.product.common.exception.ResourceNotFoundException;
@@ -99,7 +99,8 @@ public class PasswordServiceImpl implements PasswordService {
         String tenantId = tenantService.resolveTenantByEmail(email)
                 .orElseThrow(() -> new AuthException("Invalid credentials"));
 
-        return TenantScope.call(tenantId, () -> {
+        TenantContext.bind(tenantId);
+        try{
             if (request.getNewPassword().equals(request.getCurrentPassword())) {
                 throw new AuthException("New password and current password should not be same.");
             }
@@ -117,7 +118,9 @@ public class PasswordServiceImpl implements PasswordService {
             } else {
                 throw new AuthException("Current password is not match with our record.");
             }
-        });
+        }finally {
+            TenantContext.clear();
+        }
     }
 
     @Override
@@ -126,7 +129,8 @@ public class PasswordServiceImpl implements PasswordService {
         String tenantId = tenantService.resolveTenantByEmail(userEmail)
                 .orElseThrow(() -> new AuthException("Invalid credentials"));
 
-        return TenantScope.call(tenantId, () -> {
+        TenantContext.bind(tenantId);
+        try{
             var user = repository.findByEmailIgnoreCaseAndStatus(userEmail, UserStatus.ACTIVE).orElseThrow(() -> new ResourceNotFoundException("Email not registered with us."));
             String resetToken = generateResetToken();
             Optional<PasswordResetToken> passwordResetToken = passwordResetTokenRepository.findByUser(user);
@@ -157,7 +161,9 @@ public class PasswordServiceImpl implements PasswordService {
                 log.info("Could not send the password reset link, error: {}", e.getMessage());
             }
             return ResponseEntity.ok().body("Reset password link sent to your email.");
-        });
+        }finally {
+            TenantContext.clear();
+        }
     }
 
     @Override
@@ -165,7 +171,8 @@ public class PasswordServiceImpl implements PasswordService {
         String tenantId = tenantService.resolveTenantByEmail(userEmail)
                 .orElseThrow(() -> new AuthException("Invalid credentials"));
 
-        return TenantScope.call(tenantId, () -> {
+        TenantContext.bind(tenantId);
+        try{
             PasswordResetToken resetToken = passwordResetTokenRepository.findByToken(token)
                     .orElseThrow(() -> new AuthException("Unauthorized Request, reset token does not exist."));
             if (resetToken.getExpiryDate().before(new Date())) {
@@ -198,7 +205,9 @@ public class PasswordServiceImpl implements PasswordService {
                     Map.of("name", user.getName())
             );
             return ResponseEntity.ok("Password reset successfully.");
-        });
+        }finally {
+            TenantContext.clear();
+        }
     }
 
     private boolean checkPasswordHistory(User user, String newPassword) {

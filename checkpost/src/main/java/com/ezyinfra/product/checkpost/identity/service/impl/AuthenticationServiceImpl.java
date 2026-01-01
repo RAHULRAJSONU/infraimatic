@@ -11,7 +11,6 @@ import com.ezyinfra.product.checkpost.identity.data.repository.TokenRepository;
 import com.ezyinfra.product.checkpost.identity.data.repository.UserRepository;
 import com.ezyinfra.product.checkpost.identity.service.*;
 import com.ezyinfra.product.checkpost.identity.tenant.config.TenantContext;
-import com.ezyinfra.product.checkpost.identity.tenant.config.TenantScope;
 import com.ezyinfra.product.common.enums.TokenType;
 import com.ezyinfra.product.common.enums.UserStatus;
 import com.ezyinfra.product.common.exception.AuthException;
@@ -106,8 +105,8 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         String tenantId = tenantService.resolveTenantByEmail(request.getEmail())
                 .orElseThrow(() -> new AuthException("Invalid credentials"));
         TenantContext.clear();
-        return TenantScope.call(tenantId, () -> {
-
+        TenantContext.bind(tenantId);
+        try{
             authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(
                             request.getEmail(),
@@ -149,7 +148,9 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                         .refreshToken(refreshToken)
                         .build();
             }
-        });
+        }finally {
+            TenantContext.clear();
+        }
     }
 
     private Map<String, Object> computeExtraClaims(User user) {
@@ -218,7 +219,8 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         if (tenantId == null) {
             throw new AuthException("Tenant missing in refresh token");
         }
-        return TenantScope.call(tenantId, () -> {
+        TenantContext.bind(tenantId);
+        try{
             final String userEmail;
             AuthenticationResponse authResponse = null;
             userEmail = jwtService.extractUsername(refreshToken);
@@ -240,7 +242,9 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 throw new AuthException("Invalid auth token.");
             }
             return authResponse;
-        });
+        }finally {
+            TenantContext.clear();
+        }
     }
 
     @Override
@@ -260,7 +264,8 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         if (tenantId == null) {
             throw new AuthException("Tenant missing in refresh token");
         }
-        TenantScope.run(tenantId, () -> {
+        TenantContext.bind(tenantId);
+        try{
             final String userEmail = jwtService.extractUsername(token);
             var user = userRepository.findByEmailIgnoreCaseAndStatus(userEmail, UserStatus.ACTIVE).orElseThrow(
                     () -> new AuthException("Unauthorized request, access denied."));
@@ -269,6 +274,8 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             } else {
                 tokenRepository.revoke(token);
             }
-        });
+        }finally {
+            TenantContext.clear();
+        }
     }
 }

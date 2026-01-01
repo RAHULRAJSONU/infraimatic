@@ -6,7 +6,7 @@ public final class TenantContext {
 
     private TenantContext() {}
 
-    public static void set(String tenantId) {
+    public static void bind(String tenantId) {
         TENANT.set(tenantId);
     }
 

@@ -3,7 +3,7 @@ package com.ezyinfra.product.checkpost.identity.filter;
 import com.ezyinfra.product.checkpost.identity.pipeline.WebhookContext;
 import com.ezyinfra.product.checkpost.identity.pipeline.WebhookPipeline;
 import com.ezyinfra.product.checkpost.identity.pipeline.WebhookType;
-import com.ezyinfra.product.checkpost.identity.tenant.config.TenantScope;
+import com.ezyinfra.product.checkpost.identity.tenant.config.TenantContext;
 import com.ezyinfra.product.common.exception.WebhookIgnoredException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -61,18 +61,15 @@ public class WebhookPipelineFilter extends OncePerRequestFilter {
             }
 
             // 2️⃣ Bind tenant for the rest of request lifecycle
-            TenantScope.run(
-                    context.getTenantId(),
-                    () -> {
-                        try {
-                            filterChain.doFilter(request, response);
-                        } catch (IOException | ServletException e) {
-                            throw new RuntimeException(e);
-                        }
-                    }
-            );
+            TenantContext.bind(context.getTenantId());
 
-
+            try {
+                filterChain.doFilter(request, response);
+            } catch (IOException | ServletException e) {
+                throw new RuntimeException(e);
+            }finally {
+                TenantContext.clear();
+            }
         } catch (WebhookIgnoredException ignored) {
             response.setStatus(HttpServletResponse.SC_OK);
             response.getWriter().write("Ignored");
