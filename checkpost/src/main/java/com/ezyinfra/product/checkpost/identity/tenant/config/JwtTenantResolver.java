@@ -15,13 +15,11 @@ public class JwtTenantResolver {
         this.jwtService = jwtService;
     }
 
-    public Optional<String> resolveTenant(String authHeader) {
+    public Optional<String> resolveTenant(String token) {
 
-        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+        if (token == null) {
             return Optional.empty();
         }
-
-        String token = authHeader.substring(7);
 
         try {
             String tenant =
