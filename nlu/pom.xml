@@ -34,5 +34,10 @@
             <artifactId>checkpost</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>com.ezyinfra.product.infraimatic</groupId>
+            <artifactId>approval</artifactId>
+            <version>${project.version}</version>
+        </dependency>
     </dependencies>
 </project>

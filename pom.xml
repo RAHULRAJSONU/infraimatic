@@ -183,6 +183,7 @@
         <module>configuration</module>
         <module>notification</module>
         <module>messaging</module>
+        <module>approval</module>
     </modules>
 
     <build>

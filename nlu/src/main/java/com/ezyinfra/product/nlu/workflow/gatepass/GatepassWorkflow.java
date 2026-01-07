@@ -1,9 +1,13 @@
 package com.ezyinfra.product.nlu.workflow.gatepass;
 
+import com.ezyinfra.product.common.dto.EntryDto;
 import com.ezyinfra.product.common.dto.TemplateDto;
 import com.ezyinfra.product.common.exception.NotFoundException;
 import com.ezyinfra.product.common.utility.JsonMergeUtils;
 import com.ezyinfra.product.common.utility.JsonSchemaUtils;
+import com.ezyinfra.product.infraimatic.data.dto.ApprovalContext;
+import com.ezyinfra.product.infraimatic.service.ApprovalIntegrationResolverService;
+import com.ezyinfra.product.infraimatic.service.ApprovalIntegrationService;
 import com.ezyinfra.product.nlu.dto.ExtractRequest;
 import com.ezyinfra.product.nlu.dto.QuestionRequest;
 import com.ezyinfra.product.nlu.service.ParseByTypeService;
@@ -19,6 +23,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -33,6 +38,7 @@ public class GatepassWorkflow {
     private final ParseByTypeService parseByTypeService;
     private final TemplateService templateService;
     private final EntryService entryService;
+    private final ApprovalIntegrationResolverService approvalResolver;
 
     private final ConcurrentHashMap<String, Set<String>> requiredFieldsCache =
             new ConcurrentHashMap<>();
@@ -41,12 +47,13 @@ public class GatepassWorkflow {
             ObjectMapper objectMapper,
             ParseByTypeService parseByTypeService,
             TemplateService templateService,
-            EntryService entryService
+            EntryService entryService, ApprovalIntegrationResolverService approvalResolver
     ) {
         this.objectMapper = objectMapper;
         this.parseByTypeService = parseByTypeService;
         this.templateService = templateService;
         this.entryService = entryService;
+        this.approvalResolver = approvalResolver;
     }
 
     // --------------------------------------------------
@@ -119,18 +126,32 @@ public class GatepassWorkflow {
             JsonNode normalized =
                     objectMapper.readTree(session.getCollectedData().toPrettyString());
 
-            entryService.createEntry(
+            EntryDto gatepass = entryService.createEntry(
                     TYPE,
                     normalized,
                     session.getCollectedData(),
                     null
+            );
+            String approver;
+            try {
+                JsonNode requestedForNode = normalized.get("requestedFor");
+                approver = requestedForNode.textValue();
+            }catch (Exception ex){
+                ex.printStackTrace();
+                throw new RuntimeException("Failed to determine the approver for record: %s, of type: %s, Error: %s".formatted(gatepass.id(), TYPE, ex.getMessage()));
+            }
+            ApprovalContext ctx = new ApprovalContext(List.of(approver));
+
+            approvalResolver.resolveAndTrigger(
+                    TYPE,
+                    gatepass.id().toString(),
+                    ctx
             );
 
             return """
                 ✅ Gate pass details captured successfully and sent for approval.
                 %s
                 """.formatted(normalized.toPrettyString());
-
         } catch (JsonProcessingException e) {
             throw new RuntimeException("Failed to complete gatepass", e);
         }

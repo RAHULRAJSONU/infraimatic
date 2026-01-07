@@ -10,9 +10,9 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
  * Spring Boot application context and serves as a central configuration for
  * component scanning across all modules.
  */
-@EnableJpaRepositories(basePackages = "com.ezyinfra.product")
-@EntityScan(basePackages = "com.ezyinfra.product")
-@SpringBootApplication(scanBasePackages = "com.ezyinfra.product")
+@EnableJpaRepositories(basePackages = {"com.ezyinfra.product", "com.ezyinfra.product.infraimatic"})
+@EntityScan(basePackages = {"com.ezyinfra.product", "com.ezyinfra.product.infraimatic"})
+@SpringBootApplication(scanBasePackages = {"com.ezyinfra.product","com.ezyinfra.product.infraimatic"})
 public class InfraimaticApplication {
     public static void main(String[] args) {
         SpringApplication.run(InfraimaticApplication.class, args);
