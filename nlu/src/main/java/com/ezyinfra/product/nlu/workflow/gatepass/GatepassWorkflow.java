@@ -1,5 +1,8 @@
 package com.ezyinfra.product.nlu.workflow.gatepass;
 
+import com.ezyinfra.product.checkpost.identity.data.entity.User;
+import com.ezyinfra.product.checkpost.identity.tenant.config.TenantContext;
+import com.ezyinfra.product.checkpost.identity.util.SecurityUtils;
 import com.ezyinfra.product.common.dto.EntryDto;
 import com.ezyinfra.product.common.dto.TemplateDto;
 import com.ezyinfra.product.common.exception.NotFoundException;
@@ -20,13 +23,18 @@ import com.ezyinfra.product.templates.service.TemplateService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.StreamSupport;
 
 @Slf4j
 @Component
@@ -125,29 +133,38 @@ public class GatepassWorkflow {
 
             JsonNode normalized =
                     objectMapper.readTree(session.getCollectedData().toPrettyString());
-
+            if (normalized.isObject()) {
+                ObjectNode objectNode = (ObjectNode) normalized;
+                User user = TenantContext.getUser();
+                log.info("Gatepass requested by: {}", user);
+                var fullName = user.getGivenName()+" "+ user.getFamilyName();
+                objectNode.put("requestedBy", fullName);
+            }
             EntryDto gatepass = entryService.createEntry(
                     TYPE,
                     normalized,
                     session.getCollectedData(),
                     null
             );
-            String approver;
+            List<String> approver;
             try {
                 JsonNode requestedForNode = normalized.get("requestedFor");
-                approver = requestedForNode.textValue();
+                approver = StreamSupport.stream(
+                                requestedForNode.spliterator(), false)
+                        .map(JsonNode::asText)
+                        .toList();
             }catch (Exception ex){
                 ex.printStackTrace();
                 throw new RuntimeException("Failed to determine the approver for record: %s, of type: %s, Error: %s".formatted(gatepass.id(), TYPE, ex.getMessage()));
             }
-            ApprovalContext ctx = new ApprovalContext(List.of(approver));
+            ApprovalContext ctx = new ApprovalContext(approver);
 
             approvalResolver.resolveAndTrigger(
                     TYPE,
                     gatepass.id().toString(),
                     ctx
             );
-
+            session.reset();
             return """
                 ✅ Gate pass details captured successfully and sent for approval.
                 %s

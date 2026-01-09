@@ -70,6 +70,7 @@ public class UserSession {
     }
 
     public void reset() {
+        phone = null;
         workflow = null;
         state = WorkflowState.IN_PROGRESS;
         collectedData = null;

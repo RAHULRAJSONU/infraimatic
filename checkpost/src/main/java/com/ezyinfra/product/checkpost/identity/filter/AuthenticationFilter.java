@@ -1,5 +1,6 @@
 package com.ezyinfra.product.checkpost.identity.filter;
 
+import com.ezyinfra.product.checkpost.identity.data.entity.User;
 import com.ezyinfra.product.checkpost.identity.data.repository.TokenRepository;
 import com.ezyinfra.product.checkpost.identity.service.JwtService;
 import com.ezyinfra.product.checkpost.identity.tenant.config.JwtTenantResolver;
@@ -80,7 +81,7 @@ public class AuthenticationFilter extends OncePerRequestFilter {
                 authenticate(jwt, request, response);
                 filterChain.doFilter(request, response);
             } finally {
-                TenantContext.clear();
+
             }
 
         } catch (AccessDeniedException ade) {
@@ -90,18 +91,23 @@ public class AuthenticationFilter extends OncePerRequestFilter {
         } catch (Exception e) {
             log.warn("Authentication failed", e);
             writeJsonError(response, HttpServletResponse.SC_UNAUTHORIZED, "Authentication failed");
+        }finally {
+            TenantContext.clear();
         }
     }
 
-    private void authenticate(String jwt, HttpServletRequest request, HttpServletResponse response) {
+    private void authenticate(String jwt,
+                              HttpServletRequest request,
+                              HttpServletResponse response) {
 
-        final String userEmail = jwtService.extractUsername(jwt);
+        String userEmail = jwtService.extractUsername(jwt);
         if (userEmail == null) {
             throw new AuthException("Invalid JWT subject");
         }
 
-        final String tokenType = jwtService.extractClaim(jwt,
+        String tokenType = jwtService.extractClaim(jwt,
                 c -> (String) c.get(AppConstant.Jwt.TOKEN_TYPE));
+
         if (!AppConstant.Jwt.ACCESS_TOKEN.equals(tokenType)) {
             throw new AuthException("Invalid token type");
         }
@@ -114,25 +120,28 @@ public class AuthenticationFilter extends OncePerRequestFilter {
             throw new AuthException("Token revoked or expired");
         }
 
-        UserDetails userDetails = userDetailsService.loadUserByUsername(userEmail);
+        User userDetails =
+                (User) userDetailsService.loadUserByUsername(userEmail);
+
         if (!jwtService.isTokenValid(jwt, userDetails)) {
             throw new AuthException("JWT validation failed");
         }
 
-        UsernamePasswordAuthenticationToken auth =
+        UsernamePasswordAuthenticationToken authentication =
                 new UsernamePasswordAuthenticationToken(
                         userDetails,
                         null,
-                        userDetails.getAuthorities());
+                        userDetails.getAuthorities()
+                );
 
-        auth.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-        SecurityContextHolder.getContext().setAuthentication(auth);
-        log.info("User authenticated, UsernamePasswordAuthenticationToken: {}", auth);
-        SecurityContext context = SecurityContextHolder.createEmptyContext();
-        context.setAuthentication(auth);
-        SecurityContextHolder.setContext(context);
+        authentication.setDetails(
+                new WebAuthenticationDetailsSource().buildDetails(request)
+        );
 
-        securityContextRepository.saveContext(context, request, response);
+        // ✅ ONLY THIS IS REQUIRED
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+
+        log.info("User authenticated: {}", userDetails.getUsername());
     }
 
     private static String extractBearerToken(String authHeader) {

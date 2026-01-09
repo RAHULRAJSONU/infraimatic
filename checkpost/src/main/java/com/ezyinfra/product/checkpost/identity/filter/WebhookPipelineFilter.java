@@ -1,9 +1,12 @@
 package com.ezyinfra.product.checkpost.identity.filter;
 
+import com.ezyinfra.product.checkpost.identity.data.entity.User;
 import com.ezyinfra.product.checkpost.identity.pipeline.WebhookContext;
 import com.ezyinfra.product.checkpost.identity.pipeline.WebhookPipeline;
 import com.ezyinfra.product.checkpost.identity.pipeline.WebhookType;
+import com.ezyinfra.product.checkpost.identity.service.UserService;
 import com.ezyinfra.product.checkpost.identity.tenant.config.TenantContext;
+import com.ezyinfra.product.common.enums.UserStatus;
 import com.ezyinfra.product.common.exception.WebhookIgnoredException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -12,6 +15,9 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -23,9 +29,11 @@ import java.io.IOException;
 public class WebhookPipelineFilter extends OncePerRequestFilter {
 
     private final WebhookPipeline pipeline;
+    private final UserService userService;
 
-    public WebhookPipelineFilter(WebhookPipeline pipeline) {
+    public WebhookPipelineFilter(WebhookPipeline pipeline, UserService userService) {
         this.pipeline = pipeline;
+        this.userService = userService;
     }
 
     @Override
@@ -62,17 +70,33 @@ public class WebhookPipelineFilter extends OncePerRequestFilter {
 
             // 2️⃣ Bind tenant for the rest of request lifecycle
             TenantContext.bind(context.getTenantId());
+            User user = this.userService.findByPhoneNumberAndStatus(context.getSenderMobile(), UserStatus.ACTIVE).get();
+            TenantContext.bindUser(user);
+            UsernamePasswordAuthenticationToken authentication =
+                    new UsernamePasswordAuthenticationToken(
+                            user,
+                            null,
+                            user.getAuthorities()
+                    );
 
+            authentication.setDetails(
+                    new WebAuthenticationDetailsSource().buildDetails(request)
+            );
+
+            // ✅ ONLY THIS IS REQUIRED
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+
+            log.info("User authenticated: {}", user.getUsername());
             try {
                 filterChain.doFilter(request, response);
             } catch (IOException | ServletException e) {
                 throw new RuntimeException(e);
-            }finally {
-                TenantContext.clear();
             }
         } catch (WebhookIgnoredException ignored) {
             response.setStatus(HttpServletResponse.SC_OK);
             response.getWriter().write("Ignored");
+        }finally {
+            TenantContext.clear();
         }
     }
 

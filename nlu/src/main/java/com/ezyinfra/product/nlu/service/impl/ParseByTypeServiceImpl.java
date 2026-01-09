@@ -111,7 +111,7 @@ public class ParseByTypeServiceImpl implements ParseByTypeService {
             You are NOT a chatbot.
             You MUST NOT ask questions.
             You MUST NOT explain anything.
-            
+
             ====================
             ABSOLUTE RULES
             ====================
@@ -125,7 +125,23 @@ public class ParseByTypeServiceImpl implements ParseByTypeService {
             - NEVER fabricate values
             - NEVER ask follow-up questions
             - Returning {} is VALID
-            """);
+
+          ====================
+          DATE & TIME NORMALIZATION
+          ====================
+            - Convert relative dates ONLY if explicitly stated
+            - Examples:
+                "today" → current date in ISO-8601 (YYYY-MM-DD)
+                "tomorrow" → ISO date
+              "yesterday" → ISO date
+              "day before yesterday" → ISO date
+            - Convert times ONLY if explicitly stated
+            - Output format:
+                - Date: YYYY-MM-DD
+              - DateTime: YYYY-MM-DDTHH:mm:ssZ
+            - If timezone is missing, use UTC
+            - If any temporal value is ambiguous → OMIT field
+          """);
 
         sb.append("\n====================\nSCHEMA\n====================\n");
         sb.append(fullSchema.toPrettyString()).append("\n");
@@ -152,10 +168,10 @@ public class ParseByTypeServiceImpl implements ParseByTypeService {
             OUTPUT FORMAT
             ====================
             Return ONLY a JSON object.
-            Include a top-level "_confidence" object ONLY for extracted fields.
             If nothing is extracted, return {}.
             """);
 
         return sb.toString();
     }
+
 }

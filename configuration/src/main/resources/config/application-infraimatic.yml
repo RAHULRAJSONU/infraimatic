@@ -14,7 +14,7 @@ spring:
   datasource:
     url: jdbc:postgresql://localhost:5432/infraimatic
     username: postgres
-    password: p0$stgres2025
+    password: postgres
     driver-class-name: org.postgresql.Driver
     hikari:
       maximum-pool-size: 30          # tune per CPU/traffic
@@ -67,11 +67,17 @@ spring:
       api-key: ${GROQ_API_KEY}
       base-url: https://api.groq.com/openai
       chat:
+        base-url:
+        enabled: true
         options:
+#          model: openai/gpt-oss-120b
           model: llama-3.3-70b-versatile
 #          model: openai/gpt-oss-20b
+#          model: qwen/qwen3-32b
 #          model: llama-3.1-8b-instant
           temperature: 0.0
+      responses:
+        enabled: false
 whisper:
   provider: openai
   api:

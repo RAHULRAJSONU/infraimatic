@@ -11,7 +11,6 @@ public class WebhookContext {
 
     private final WebhookType type;
     private final HttpServletRequest request;
-
     @Setter
     private String senderMobile;
     @Setter
